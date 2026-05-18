@@ -5,7 +5,8 @@ extends MeshInstance3D
 @export var g: float = 9.8
 @export var damping: float = 10
 @export var air_damping: float = 0.1
-@export var energy_abs: float = 0.5
+@export_range(0,1) var energy_abs: float = 0.5
+@export_range(0,1) var squish_factor: float = 0.5
 
 var anchor_point_arr: PackedVector3Array
 var loc_acc: PackedVector3Array = []
@@ -46,21 +47,37 @@ func _ready() -> void:
 	var center: Vector3 = _calculate_center(pos)
 	radius = (center - pos[0]).length()
 	
+func _compute_glob_acc() -> Vector3:
+	return g * Vector3.DOWN - air_damping * glob_vel
+	
+func _compute_MD(center: Vector3) -> Vector3:
+	var mean: Vector3
+	for i in range(N):
+		var u: Vector3 = pos[i] - center
+		if u.dot(Vector3.UP) < 0: u *= -1
+		mean += u.normalized() * (u.length() - radius)
+	mean = Vector3(max(-mean.x, 0), max(-mean.y, 0), max(-mean.z, 0))
+	mean /= N
+	return mean
+	
 func _integrate(dt: float) -> void:
-	glob_acc += g * Vector3.DOWN - air_damping * glob_vel
+	glob_acc += _compute_glob_acc()
 	glob_vel += glob_acc * dt
 	var center: Vector3 = _calculate_center(pos)
+	var mean_deformation = _compute_MD(center) / 0.02 # 0.02 = rescale factor
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
 		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
-		var anchor_spring = k/m * anchor_offset
+		var anchor_spring: Vector3 = k/m * anchor_offset
 		var center_offset: Vector3 = pos[i] - center
-		var center_spring = k/(2*m) * center_offset.normalized() * (radius - center_offset.length())
+		var angle: float = center_offset.angle_to(anchor_point_arr[i])
+		var deformation: float = mean_deformation.cross(center_offset.normalized()).length()
+		var custom_radius: float = radius * (1 + deformation * squish_factor)
+		var center_spring: Vector3 = k/m * center_offset.normalized() * (custom_radius - center_offset.length())
 		var resistance: Vector3 = damping * loc_vel[i]
 		loc_acc[i] = anchor_spring - resistance + center_spring
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt
-	glob_acc = Vector3.ZERO
 		
 func _collide() -> void:
 	var zero_world: Vector3 = global_transform.inverse() * Vector3.ZERO
@@ -73,12 +90,13 @@ func _collide() -> void:
 func _recenter(dt: float, anchor_center) -> void:
 	var new_anchor_center: Vector3 = _calculate_center(pos)
 	var anchor_vel: Vector3 = new_anchor_center - anchor_center
-	if anchor_vel.length() < 0.001: return
+	if anchor_vel.length() < 0.001:
+		glob_acc *= 0
+		return
 	
 	var u: Vector3 = anchor_vel.normalized()
+	glob_acc = -u * u.dot(_compute_glob_acc())
 	glob_vel -= u * min(u.dot(glob_vel), 0) * (2 - energy_abs)
-	for i in range(N):
-		anchor_point_arr[i] += anchor_vel * (1 - energy_abs)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(dt: float) -> void:

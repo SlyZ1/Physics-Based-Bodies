@@ -24,7 +24,7 @@ sky_material = SubResource("ProceduralSkyMaterial_vyorq")
 background_mode = 2
 sky = SubResource("Sky_4rfvc")
 
-[sub_resource type="BoxMesh" id="BoxMesh_j8dos"]
+[sub_resource type="BoxMesh" id="BoxMesh_tgqep"]
 
 [node name="SimpleSquishy" type="Node3D"]
 
@@ -42,9 +42,9 @@ environment = SubResource("Environment_c8ed3")
 
 [node name="Squish" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.53972, 0)
-mesh = SubResource("BoxMesh_j8dos")
+mesh = SubResource("BoxMesh_tgqep")
 script = ExtResource("2_60v1p")
-k = 40.0
+k = null
 damping = 20.0
 air_damping = 0.01
 energy_abs = 0.3
