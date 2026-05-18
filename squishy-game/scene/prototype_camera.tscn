@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_wq2fx"]
 [ext_resource type="Script" path="res://scripts/cpu/basic_player_move.gd" id="2_o5nyf"]
-[ext_resource type="Script" path="res://basic_camera_move.gd" id="3_t2kpe"]
+[ext_resource type="Script" path="res://scripts/cpu/basic_camera_move.gd" id="3_t2kpe"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_d8eqd"]
 
@@ -22,16 +22,16 @@ ground_horizon_color = Color(0.376471, 0.592157, 0.839216, 1)
 ground_curve = 0.251068
 sun_curve = 0.160766
 
-[sub_resource type="Sky" id="Sky_4rfvc"]
+[sub_resource type="Sky" id="Sky_j1aij"]
 sky_material = SubResource("ProceduralSkyMaterial_lni3v")
 
 [sub_resource type="Environment" id="Environment_suimo"]
 background_mode = 2
-sky = SubResource("Sky_4rfvc")
+sky = SubResource("Sky_j1aij")
 
 [node name="TestScene" type="Node3D"]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="Ground" type="MeshInstance3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 mesh = SubResource("PlaneMesh_d8eqd")
 surface_material_override/0 = SubResource("StandardMaterial3D_8ri27")
@@ -44,11 +44,11 @@ move_speed = 3.425
 move_damping = 5.0
 camera = NodePath("../CameraContainer/Camera3D")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D"]
+[node name="VisualBody" type="MeshInstance3D" parent="CharacterBody3D"]
 physics_interpolation_mode = 1
 mesh = SubResource("CapsuleMesh_byhv8")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+[node name="CollisionBody" type="CollisionShape3D" parent="CharacterBody3D"]
 shape = SubResource("CapsuleShape3D_n1gb4")
 
 [node name="CameraTarget" type="Node3D" parent="CharacterBody3D"]
