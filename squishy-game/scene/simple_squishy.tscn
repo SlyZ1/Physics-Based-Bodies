@@ -24,12 +24,12 @@ sky_material = SubResource("ProceduralSkyMaterial_vyorq")
 background_mode = 2
 sky = SubResource("Sky_4rfvc")
 
-[sub_resource type="BoxMesh" id="BoxMesh_j8dos"]
+[sub_resource type="SphereMesh" id="SphereMesh_hjnoc"]
 
 [node name="SimpleSquishy" type="Node3D"]
 
 [node name="Ground" type="MeshInstance3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+transform = Transform3D(9.95596, 0.937434, 0, -0.937434, 9.95596, 0, 0, 0, 10, 0, 0, 0)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
@@ -40,14 +40,17 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
 
-[node name="Squish" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.53972, 0)
-mesh = SubResource("BoxMesh_j8dos")
+[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.53721, 5.53972, 0)
+mesh = SubResource("SphereMesh_hjnoc")
 script = ExtResource("2_60v1p")
+ground = NodePath("../Ground")
 k = 40.0
 damping = 20.0
 air_damping = 0.01
-energy_abs = 0.3
+energy_abs = 0.4
+squish_factor = 0.35
+friction_factor = 2.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76666, 3.83049)
