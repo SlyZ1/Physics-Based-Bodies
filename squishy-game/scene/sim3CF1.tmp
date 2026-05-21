@@ -1,13 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=9 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish/simple_squishy.gd" id="2_60v1p"]
-[ext_resource type="Script" path="res://scripts/cpu/free_cam.gd" id="3_xckpl"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
-albedo_color = Color(1, 1, 1, 0.517647)
 albedo_texture = ExtResource("1_ppqmt")
 uv1_scale = Vector3(10, 10, 10)
 
@@ -28,16 +26,10 @@ sky = SubResource("Sky_4rfvc")
 
 [sub_resource type="SphereMesh" id="SphereMesh_hjnoc"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0itu"]
-no_depth_test = true
-albedo_color = Color(1, 0.32, 0.32, 1)
-
-[sub_resource type="SphereMesh" id="SphereMesh_sq561"]
-
 [node name="SimpleSquishy" type="Node3D"]
 
 [node name="Ground" type="MeshInstance3D" parent="."]
-transform = Transform3D(9.84808, -1.73648, 0, 1.73648, 9.84808, 0, 0, 0, 10, 0, 0, 0)
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
@@ -48,32 +40,16 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
 
-[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground_node", "center_node")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 1.97105, 0)
+[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
 mesh = SubResource("SphereMesh_hjnoc")
 script = ExtResource("2_60v1p")
-ground_node = NodePath("../Ground")
-center_node = NodePath("../Gizmos/Center")
-move_force = 40.0
-k = 60.0
-m = 0.2
-g = 20.0
-damping = 15.0
-air_damping = 0.0
-energy_abs = 0.555
-squish_factor = 0.593
-smooth_factor = 1.0
+ground = NodePath("../Ground")
+k = 40.0
+damping = 20.0
+energy_abs = 0.4
+squish_factor = 0.35
+friction_factor = 2.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76666, 3.83049)
-script = ExtResource("3_xckpl")
-speed = 3.0
-
-[node name="Gizmos" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
-
-[node name="Center" type="MeshInstance3D" parent="Gizmos"]
-transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
-material_override = SubResource("StandardMaterial3D_x0itu")
-mesh = SubResource("SphereMesh_sq561")
-skeleton = NodePath("../../Squish")
