@@ -48,6 +48,30 @@ var neighbours: Array
 const inputs = preload("res://scripts/cpu/inputs.gd")
 const mesh_utils = preload("res://scripts/cpu/mesh_utils.gd")
 
+func add_glob_acc(acc: Vector3):
+	glob_acc += acc
+	
+func add_glob_vel(vel: Vector3):
+	glob_vel += vel
+
+func add_loc_acc(acc: Vector3, i: int):
+	loc_acc[i] += acc
+	
+func add_loc_vel(vel: Vector3, i: int):
+	loc_vel[i] += vel
+	
+func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
+	var anchor_center: Vector3 = mesh_utils.get_center(anchor_point_arr)
+	if reset_vel_acc:
+		glob_acc *= 0
+		glob_vel *= 0
+	for i in range(N):
+		anchor_point_arr[i] -= anchor_center
+		if reset_vel_acc:
+			loc_acc[i] *= 0
+			loc_vel[i] *= 0
+	pos = anchor_point_arr.duplicate()
+	
 func _ready() -> void:
 	mesh = mesh_utils.create_icosphere(0.5, 4)
 	anchor_point_arr = mesh_utils.get_vertices(mesh)
@@ -171,9 +195,10 @@ func _integrate(dt: float) -> void:
 		
 		var resistance: Vector3 = damping * loc_vel[i]
 		
-		loc_acc[i] = anchor_spring - resistance + center_spring + aero_force
+		loc_acc[i] += anchor_spring - resistance + center_spring + aero_force
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt
+		loc_acc[i] *= 0
 	glob_acc *= 0
 		
 func _collide(dt: float) -> void:
