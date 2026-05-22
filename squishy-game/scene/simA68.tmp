@@ -55,12 +55,13 @@ script = ExtResource("2_60v1p")
 ground_node = NodePath("../Ground")
 center_node = NodePath("../Gizmos/Center")
 move_force = 40.0
+k = 60.0
 m = 0.2
 g = 20.0
 damping = 15.0
-air_damping = 0.01
-energy_abs = 0.419
-squish_factor = 0.768
+air_damping = 0.0
+energy_abs = 0.555
+squish_factor = 0.593
 smooth_factor = 1.0
 
 [node name="Camera3D" type="Camera3D" parent="."]

@@ -1,21 +1,64 @@
-const sphere_ring_count = 65
+static func create_icosphere(r: float, subs: int) -> ArrayMesh:
+	var t = (1.0 + sqrt(5.0)) / 2.0
+	var verts = PackedVector3Array([
+		Vector3(-1,  t,  0), Vector3( 1,  t,  0),
+		Vector3(-1, -t,  0), Vector3( 1, -t,  0),
+		Vector3( 0, -1,  t), Vector3( 0,  1,  t),
+		Vector3( 0, -1, -t), Vector3( 0,  1, -t),
+		Vector3( t,  0, -1), Vector3( t,  0,  1),
+		Vector3(-t,  0, -1), Vector3(-t,  0,  1),
+	])
+	for i in range(verts.size()):
+		verts[i] = -verts[i].normalized() * r
 
-static func close_sphere(mesh: Mesh) -> ArrayMesh:
-	var mesh_data: Array = mesh.surface_get_arrays(0)
-	var indices: PackedInt32Array = mesh_data[Mesh.ARRAY_INDEX]
-	var N: int = mesh_data[Mesh.ARRAY_VERTEX].size()
-	for i in range(sphere_ring_count, N - 1, sphere_ring_count):
-		indices.append(i - sphere_ring_count)
-		indices.append(i)
-		indices.append(i - 1)
-		
-		indices.append(i - 1)
-		indices.append(i)
-		indices.append(i + sphere_ring_count - 1)
-	mesh_data[Mesh.ARRAY_INDEX] = indices
-	var arr_mesh: ArrayMesh = ArrayMesh.new()
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
+	var indices = PackedInt32Array([
+		0,11,5, 0,5,1, 0,1,7, 0,7,10, 0,10,11,
+		1,5,9, 5,11,4, 11,10,2, 10,7,6, 7,1,8,
+		3,9,4, 3,4,2, 3,2,6, 3,6,8, 3,8,9,
+		4,9,5, 2,4,11, 6,2,10, 8,6,7, 9,8,1
+	])
+
+	var mid_cache = {}
+	for s in range(subs):
+		var new_indices = PackedInt32Array()
+		mid_cache.clear()
+		for t2 in range(0, indices.size(), 3):
+			var a = indices[t2]
+			var b = indices[t2 + 1]
+			var c = indices[t2 + 2]
+			var ab = _midpoint(a, b, verts, mid_cache, r)
+			var bc = _midpoint(b, c, verts, mid_cache, r)
+			var ca = _midpoint(c, a, verts, mid_cache, r)
+			new_indices.append_array([a,ab,ca, b,bc,ab, c,ca,bc, ab,bc,ca])
+		indices = new_indices
+
+	var normals = PackedVector3Array()
+	for v in verts:
+		normals.append(v.normalized())
+
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_INDEX] = indices
+
+	var arr_mesh = ArrayMesh.new()
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	
+	var mat = StandardMaterial3D.new()
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	arr_mesh.surface_set_material(0, mat)
 	return arr_mesh
+
+static func _midpoint(a: int, b: int, verts: PackedVector3Array, cache: Dictionary, r: float) -> int:
+	var key = min(a, b) * 1000000 + max(a, b)
+	if cache.has(key):
+		return cache[key]
+	var mid = ((verts[a] + verts[b]) / 2.0).normalized() * r
+	verts.append(mid)
+	var idx = verts.size() - 1
+	cache[key] = idx
+	return idx
 
 static func compute_neighbors(mesh: Mesh) -> Array:
 	var mesh_data: Array = mesh.surface_get_arrays(0)
@@ -67,10 +110,17 @@ static func get_center(arr: PackedVector3Array) -> Vector3:
 	center /= N
 	return center
 
-static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> Mesh:
+static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh:
 	var surface: Array = mesh.surface_get_arrays(0)
 	surface[Mesh.ARRAY_VERTEX] = vertices
-	surface[Mesh.ARRAY_NORMAL] = recompute_normals(vertices)
+	
+	var arr_mesh: ArrayMesh = ArrayMesh.new()
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	return arr_mesh
+	
+static func set_triangles(mesh: Mesh, triangles: PackedInt32Array) -> ArrayMesh:
+	var surface: Array = mesh.surface_get_arrays(0)
+	surface[Mesh.ARRAY_INDEX] = triangles
 	
 	var arr_mesh: ArrayMesh = ArrayMesh.new()
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
@@ -79,7 +129,7 @@ static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> Mesh:
 static func smooth_mesh(mesh: Mesh, vertices: PackedVector3Array, neighbours: Array, factor: float) -> PackedVector3Array:
 	var mesh_data: Array = mesh.surface_get_arrays(0)
 	var new_vertices: PackedVector3Array = vertices.duplicate()
-	for i in range(sphere_ring_count, neighbours.size() - sphere_ring_count):
+	for i in range(neighbours.size()):
 		var list: Array = neighbours[i]
 		var v_pos: Vector3 = new_vertices[i]
 		var center: Vector3

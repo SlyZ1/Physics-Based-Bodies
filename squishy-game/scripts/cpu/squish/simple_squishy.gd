@@ -17,10 +17,12 @@ extends MeshInstance3D
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.5
 @export var friction_factor: float = 3
+@export_range(0,1) var stretch_factor: float = 0.66
 
 @export_group("Debug")
 @export_range(0,1) var smooth_factor: float = 0.5
 
+var original_anchor_point_arr: PackedVector3Array
 var anchor_point_arr: PackedVector3Array
 var loc_acc: PackedVector3Array = []
 var loc_vel: PackedVector3Array = []
@@ -29,6 +31,7 @@ var glob_vel: Vector3
 var pos: PackedVector3Array = []
 var N: int
 var radius: float
+var pos_center: Vector3
 
 var anchor_vel: Vector3
 var is_colliding: bool
@@ -39,10 +42,11 @@ const inputs = preload("res://scripts/cpu/inputs.gd")
 const mesh_utils = preload("res://scripts/cpu/mesh_utils.gd")
 
 func _ready() -> void:
-	mesh = mesh_utils.close_sphere(mesh)
+	mesh = mesh_utils.create_icosphere(0.5, 4)
 	anchor_point_arr = mesh_utils.get_vertices(mesh)
+	original_anchor_point_arr = anchor_point_arr.duplicate()
 	pos = anchor_point_arr.duplicate()
-	N = pos.size();
+	N = anchor_point_arr.size();
 	loc_acc.resize(N)
 	loc_vel.resize(N)
 	mesh = mesh_utils.set_vertices(mesh, pos)
@@ -65,20 +69,23 @@ func _ready() -> void:
 		dup.position = global_transform * anchor_point_arr[i]
 		center_node.get_parent().add_child(dup)
 		squeleton.append(dup)
-	
-func _shrink(dt: float, dir: Vector3, force: float) -> void:
-	var center: Vector3 = mesh_utils.get_center(pos)
-	for i in range(N):
-		loc_vel[i] -= dir * dir.dot(pos[i] - center) * force * dt
 		
 func _stretch(dt: float) -> void:
+	if glob_acc.length() < 0.01 or inputs.jumps(): return
+	return
+	var elong_dir: Vector3 = glob_vel.normalized()
+	var dot_prod: float = max(glob_vel.dot(glob_acc), -100)
+	var elongation: float = 1 + dot_prod * 0.0045 * stretch_factor
+	elongation = clamp(elongation, 0.5, 1.5)
+	var compression: float = 1 / sqrt(elongation)
+	
 	var center: Vector3 = mesh_utils.get_center(anchor_point_arr)
-	var dot_prod: float = glob_acc.dot(glob_vel)
-	var dir: Vector3 = glob_acc.normalized()
 	for i in range(N):
-		var offset: Vector3 = (anchor_point_arr[i] - center).normalized()
-		var custom_radius: float = radius * abs(offset.dot(glob_vel.normalized()))
-		anchor_point_arr[i] = center + offset * custom_radius
+		var offset: Vector3 = original_anchor_point_arr[i]
+		var elong_compo: Vector3 = elong_dir * elong_dir.dot(offset) * elongation
+		var perp_compo: Vector3 = (offset - elong_dir * elong_dir.dot(offset)) * compression
+		anchor_point_arr[i] = elong_compo + perp_compo
+		anchor_point_arr[i] += center
 	
 func _compute_glob_acc(dt: float) -> Vector3:
 	var gravity: Vector3 = g * Vector3.DOWN
@@ -104,23 +111,13 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	var vel: Vector3 = glob_acc * dt
 	if is_colliding:
 		var u = anchor_vel.normalized()
-		var dot_vel: float = u.dot(glob_vel + vel * 0.5)
+		var dot_vel: float = u.dot(glob_vel + vel * 0.65)
 		vel -= u * min(dot_vel, 0) * (2 - energy_abs)
-		vel += 0.5 * anchor_vel / dt
+		vel += 1 * anchor_vel / dt
 	
 	if inputs.jumps(): glob_vel -= Vector3.DOWN * Vector3.DOWN.dot(glob_vel)
 	
 	return vel
-	
-func _compute_MD(center: Vector3) -> Vector3:
-	var mean: Vector3
-	for i in range(N):
-		var u: Vector3 = (pos[i] - center).abs()
-		var v: Vector3 = (anchor_point_arr[i] - center).abs()
-		mean += v - u
-	mean /= N
-	mean = mean.max(Vector3.ZERO)
-	return mean
 	
 func _compute_MD_2(center: Vector3) -> Vector3:
 	var mean: Vector3
@@ -134,9 +131,8 @@ func _compute_MD_2(center: Vector3) -> Vector3:
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
-	var center: Vector3 = mesh_utils.get_center(pos)
 	var deformation_rescale_factor: float = 0.1
-	var mean_deformation = _compute_MD_2(center) / 0.02
+	var mean_deformation = _compute_MD_2(pos_center) / 0.02
 	#_stretch(dt)
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
@@ -144,7 +140,7 @@ func _integrate(dt: float) -> void:
 		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 		var anchor_spring: Vector3 = k/m * anchor_offset
 		
-		var center_offset: Vector3 = (pos[i] - center)
+		var center_offset: Vector3 = (pos[i] - pos_center)
 		var dist_to_center: float = center_offset.length()
 		center_offset /= dist_to_center
 		var angle: float = center_offset.angle_to(anchor_point_arr[i])
@@ -172,13 +168,13 @@ func _collide(dt: float) -> void:
 			loc_vel[i] -= ground_up * ground_up.dot(loc_vel[i])
 			is_colliding = true
 
-func _recenter(dt: float, anchor_center) -> void:
-	var new_anchor_center: Vector3 = mesh_utils.get_center(pos)
+func _recenter(dt: float, old_pos_center) -> void:
+	pos_center = mesh_utils.get_center(pos)
 	if !is_colliding:
 		return
-	anchor_vel = new_anchor_center - anchor_center
+	anchor_vel = pos_center - old_pos_center
 
-func _handle_gizmos():
+func _handle_gizmos() -> void:
 	if center_node.get_parent_node_3d().visible: 
 		center_node.global_position = global_transform * mesh_utils.get_center(anchor_point_arr)
 		for i in range(N):
@@ -186,7 +182,7 @@ func _handle_gizmos():
 
 var iteration: int
 var mean_fps: float
-func _handle_fps():
+func _handle_fps() -> void:
 	mean_fps += Engine.get_frames_per_second()
 	iteration += 1
 	if iteration == 20:
@@ -196,21 +192,24 @@ func _handle_fps():
 
 func _physics(dt: float) -> void:
 	_integrate(dt)
-	var anchor_center = mesh_utils.get_center(pos)
+	var old_pos_center = mesh_utils.get_center(pos)
 	_collide(dt)
-	_recenter(dt, anchor_center)
-
+	_recenter(dt, old_pos_center)
+	
+func _refresh_mesh() -> void:
+	var vertices = mesh_utils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
+	mesh = mesh_utils.set_vertices(mesh, vertices)
+	custom_aabb = AABB()
+	
 var pause = false
 func _process(dt: float) -> void:
 	dt = clamp(dt, 0, 0.05)
+	#dt /= 3
 	if Input.is_action_just_pressed("gizmos"):
 		center_node.get_parent_node_3d().visible = !center_node.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
 	if !pause: _physics(dt)
 		
-	var vertices = mesh_utils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
-	mesh = mesh_utils.set_vertices(mesh, vertices)
-	custom_aabb = AABB()
-	
+	_refresh_mesh()
 	_handle_gizmos()
 	_handle_fps()
