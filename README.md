@@ -35,14 +35,22 @@ The positions of the squeleton are only affected by the real positions during co
 
 #### Public methods:
 
-`add_glob_acc(acc: Vector3)` : add an acceleration to the squeleton \
-`add_glob_vel(vel: Vector3)` : add a velocity to the squeleton \
-`add_loc_acc(acc: Vector3, i: int)` : add an acceleration to the number `i` vertex \
-`add_loc_vel(vel: Vector3, i: int)` : add a velocity to the number `i` vertex \
-`teleport(new_pos: Vector3, reset_vel_acc: bool = true)` : teleport the center of the squeleton <b>and</b> real positions `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
+- `add_glob_acc(acc: Vector3) -> void` : add an acceleration to the squeleton \
+- `add_glob_vel(vel: Vector3) -> void` : add a velocity to the squeleton \
+- `add_loc_acc(acc: Vector3, i: int) -> void` : add an acceleration to the number `i` vertex \
+- `add_loc_vel(vel: Vector3, i: int) -> void` : add a velocity to the number `i` vertex \
+- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real positions `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true` \
+- `get_squeleton_center() -> Vector3` : Get the center of the squeleton \
+- `get_real_center() -> Vector3` : Get the real center
 
 #### Public variables:
 
-`N` : number of vertices \
-`radius` : radius of the sphere \
-`is_colliding` : whether the body collides with something or not
+- `N` : RO, number of vertices \
+- `radius` : RO, radius of the sphere \
+- `is_colliding` : RO, whether the body collides with something or not \
+- `glob_acc` : RO, acceleration of the squeleton \
+- `glob_vel` : RO, velocity of the squeleton
+
+## `mesh_utils.gd`
+
+TODO

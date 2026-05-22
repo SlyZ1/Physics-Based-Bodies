@@ -48,17 +48,23 @@ var neighbours: Array
 const inputs = preload("res://scripts/cpu/inputs.gd")
 const mesh_utils = preload("res://scripts/cpu/mesh_utils.gd")
 
-func add_glob_acc(acc: Vector3):
+func add_glob_acc(acc: Vector3) -> void:
 	glob_acc += acc
 	
-func add_glob_vel(vel: Vector3):
+func add_glob_vel(vel: Vector3) -> void:
 	glob_vel += vel
 
-func add_loc_acc(acc: Vector3, i: int):
+func add_loc_acc(acc: Vector3, i: int) -> void:
 	loc_acc[i] += acc
 	
-func add_loc_vel(vel: Vector3, i: int):
+func add_loc_vel(vel: Vector3, i: int) -> void:
 	loc_vel[i] += vel
+	
+func get_squeleton_center() -> Vector3:
+	return mesh_utils.get_center(anchor_point_arr)
+	
+func get_real_center() -> Vector3:
+	return mesh_utils.get_center(pos)
 	
 func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	var anchor_center: Vector3 = mesh_utils.get_center(anchor_point_arr)
