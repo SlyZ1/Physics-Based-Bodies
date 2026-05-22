@@ -9,14 +9,21 @@ extends MeshInstance3D
 @export var jump_force: float = 10
 
 @export_group("Physics")
+@export_subgroup("Global")
+@export var g: float = 9.8
+@export var air_damping: float = 0.1
+@export var friction_factor: float = 3
+@export_subgroup("Springs")
 @export var k: float = 50
 @export var m: float = 0.1
-@export var g: float = 9.8
 @export var damping: float = 10
-@export var air_damping: float = 0.1
+@export_subgroup("Aerodynamism")
+@export var aero_factor: float = 0.01
+@export var cp_front: float = 0.9
+@export var cp_back: float = 0.4
+@export_subgroup("Customization Factors")
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.5
-@export var friction_factor: float = 3
 @export_range(0,1) var stretch_factor: float = 0.66
 
 @export_group("Debug")
@@ -119,7 +126,7 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	
 	return vel
 	
-func _compute_MD_2(center: Vector3) -> Vector3:
+func _compute_MD(center: Vector3) -> Vector3:
 	var mean: Vector3
 	for i in range(N):
 		var u: Vector3 = (pos[i] - center).abs()
@@ -131,26 +138,40 @@ func _compute_MD_2(center: Vector3) -> Vector3:
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
-	var deformation_rescale_factor: float = 0.1
-	var mean_deformation = _compute_MD_2(pos_center) / 0.02
-	#_stretch(dt)
+	
+	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.02
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
 		
 		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 		var anchor_spring: Vector3 = k/m * anchor_offset
 		
-		var center_offset: Vector3 = (pos[i] - pos_center)
-		var dist_to_center: float = center_offset.length()
-		center_offset /= dist_to_center
-		var angle: float = center_offset.angle_to(anchor_point_arr[i])
-		var deformation: float = mean_deformation.cross(center_offset).length()
+		var normal: Vector3 = (pos[i] - pos_center)
+		var dist_to_center: float = normal.length()
+		normal /= dist_to_center
+		var angle: float = normal.angle_to(anchor_point_arr[i])
+		var deformation: float = mean_deformation.cross(normal).length()
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
-		var center_spring: Vector3 = k/m * center_offset * (custom_radius - dist_to_center)
+		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
+		
+		var speed: float = loc_vel[i].length()
+		var vel_dir: Vector3 = Vector3.ZERO if speed < 1e-8 else loc_vel[i] / speed
+		var aero_deform: float = speed * speed * aero_factor
+		var cos_angle: float = vel_dir.dot(normal)
+		var aero_force: Vector3
+		if cos_angle > 0:
+			var pressure: float = aero_deform * cp_front * cos_angle
+			pressure = min(pressure, 0.3)
+			aero_force = -pressure * normal
+		else:
+			var pressure: float = aero_deform * cp_back * cos_angle * abs(cos_angle)
+			pressure = min(pressure, 0.3)
+			aero_force = pressure * (vel_dir).normalized()
+		aero_force -= (normal - vel_dir * vel_dir.dot(normal)) * glob_vel.length() * aero_factor * 0
 		
 		var resistance: Vector3 = damping * loc_vel[i]
 		
-		loc_acc[i] = anchor_spring - resistance + center_spring
+		loc_acc[i] = anchor_spring - resistance + center_spring + aero_force
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt
 	glob_acc *= 0
