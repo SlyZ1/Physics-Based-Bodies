@@ -27,7 +27,6 @@ extends MeshInstance3D
 @export_subgroup("Customization Factors")
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.5
-@export_range(0,1) var stretch_factor: float = 0.66
 
 @export_group("Debug")
 @export_range(0,1) var smooth_factor: float = 0.5
@@ -44,6 +43,7 @@ var pos: PackedVector3Array = []
 var N: int
 var radius: float
 var pos_center: Vector3
+var squeleton_center: Vector3
 
 var anchor_vel: Vector3
 var is_colliding: bool
@@ -63,22 +63,34 @@ func add_loc_vel(vel: Vector3, i: int) -> void:
 	loc_vel[i] += vel
 	
 func get_squeleton_center() -> Vector3:
-	return MeshUtils.get_center(anchor_point_arr)
+	return squeleton_center
 	
 func get_real_center() -> Vector3:
-	return MeshUtils.get_center(pos)
+	return pos_center
+	
+func get_radius_in_dir(dir: Vector3) -> float:
+	var best_dot = -INF
+	var best_radius = radius
+	for i in range(pos.size()):
+		var n = (pos_center - pos[i]).normalized()
+		var d = n.dot(dir.normalized())
+		if d > best_dot:
+			best_dot = d
+			best_radius = (pos_center - pos[i]).length()
+	return best_radius
 	
 func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
-	var anchor_center: Vector3 = MeshUtils.get_center(anchor_point_arr)
 	if reset_vel_acc:
 		glob_acc *= 0
 		glob_vel *= 0
 	for i in range(N):
-		anchor_point_arr[i] -= anchor_center
+		anchor_point_arr[i] -= squeleton_center
 		if reset_vel_acc:
 			loc_acc[i] *= 0
 			loc_vel[i] *= 0
 	pos = anchor_point_arr.duplicate()
+	squeleton_center *= 0
+	pos_center *= 0
 	
 func _ready() -> void:
 	mesh = MeshUtils.create_icosphere(0.5, 4)
@@ -110,35 +122,10 @@ func _ready() -> void:
 		dup.position = global_transform * anchor_point_arr[i]
 		center_gizmo.get_parent().add_child(dup)
 		squeleton.append(dup)
-		
-func _stretch(dt: float) -> void:
-	if glob_acc.length() < 0.01 or InputManager.jumps(): return
-	return
-	var elong_dir: Vector3 = glob_vel.normalized()
-	var dot_prod: float = max(glob_vel.dot(glob_acc), -100)
-	var elongation: float = 1 + dot_prod * 0.0045 * stretch_factor
-	elongation = clamp(elongation, 0.5, 1.5)
-	var compression: float = 1 / sqrt(elongation)
-	
-	var center: Vector3 = MeshUtils.get_center(anchor_point_arr)
-	for i in range(N):
-		var offset: Vector3 = original_anchor_point_arr[i]
-		var elong_compo: Vector3 = elong_dir * elong_dir.dot(offset) * elongation
-		var perp_compo: Vector3 = (offset - elong_dir * elong_dir.dot(offset)) * compression
-		anchor_point_arr[i] = elong_compo + perp_compo
-		anchor_point_arr[i] += center
 	
 func _compute_glob_acc(dt: float) -> Vector3:
 	var gravity: Vector3 = g * Vector3.DOWN
 	var acc: Vector3 = gravity - air_damping * glob_vel
-	
-	if is_colliding:
-		var u = anchor_vel.normalized()
-		var dot_vel: float = u.dot(glob_vel)
-		var tang_vel: Vector3 = glob_vel - u * dot_vel
-		var ground_friction: Vector3 = -tang_vel * friction_factor
-		acc += ground_friction
-	
 	return acc
 	
 func _compute_glob_vel(dt: float) -> Vector3:
@@ -173,26 +160,26 @@ func _integrate(dt: float) -> void:
 		
 		var normal: Vector3 = (pos[i] - pos_center)
 		var dist_to_center: float = normal.length()
-		normal /= dist_to_center
+		if dist_to_center > 1e-8: normal /= dist_to_center
 		var angle: float = normal.angle_to(anchor_point_arr[i])
 		var deformation: float = mean_deformation.cross(normal).length()
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
-		var speed: float = loc_vel[i].length()
-		var vel_dir: Vector3 = Vector3.ZERO if speed < 1e-8 else loc_vel[i] / speed
-		var aero_deform: float = speed * aero_factor
+		var speed: float = (loc_vel[i] + anch_spring_vel[i]).length()
+		var vel_dir: Vector3 = Vector3.ZERO if speed < 1e-8 else (loc_vel[i] + anch_spring_vel[i]) / speed
+		var aero_deform: float = speed * speed * aero_factor
 		var cos_angle: float = vel_dir.dot(normal)
 		var aero_force: Vector3
 		if cos_angle < 0:
-			var pressure: float = aero_deform * cp_back * abs(cos_angle) * abs(cos_angle)
+			var pressure: float = aero_deform * cp_back * abs(cos_angle)
 			aero_force += -pressure * vel_dir
 		
 		var resistance: Vector3 = center_damping * loc_vel[i]
 		
 		anch_spring_acc[i] = anchor_spring - squeleton_damping * anch_spring_vel[i]
 		anch_spring_vel[i] += anch_spring_acc[i] * dt
-		loc_acc[i] += - resistance + center_spring + aero_force
+		loc_acc[i] += - resistance + center_spring + aero_force * dt
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
 		loc_acc[i] *= 0
@@ -238,6 +225,7 @@ func _physics(dt: float) -> void:
 	var old_pos_center = MeshUtils.get_center(pos)
 	_collide(dt)
 	_recenter(dt, old_pos_center)
+	squeleton_center = MeshUtils.get_center(anchor_point_arr)
 	
 func _refresh_mesh() -> void:
 	var vertices = MeshUtils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
