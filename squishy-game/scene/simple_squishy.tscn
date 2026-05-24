@@ -80,13 +80,14 @@ cam_container = NodePath("../../CameraContainer")
 ground_force = 40.0
 air_force = 15.0
 ground_friction = 4.5
-air_friction = 0.5
+air_friction = 0.75
 
 [node name="Jump" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
 script = ExtResource("4_yyrdy")
 squishy = NodePath("..")
 jump_force = 15.0
 coyotee_time = 0.1
+jump_buffer_time = 0.1
 
 [node name="Eye" type="MeshInstance3D" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
 transform = Transform3D(0.245, 0, 0, 0, 0.245, 0, 0, 0, 0.245, 0, 0, 0.549312)
