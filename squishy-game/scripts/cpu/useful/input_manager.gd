@@ -1,3 +1,6 @@
+class_name InputManager
+extends Object
+
 static func get_move_inputs() -> Vector2:
 	return Input.get_vector("left", "right", "backward", "forward")
 

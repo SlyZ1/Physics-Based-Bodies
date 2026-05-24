@@ -1,3 +1,6 @@
+class_name MeshUtils
+extends Object
+
 static func create_icosphere(r: float, subs: int) -> ArrayMesh:
 	var t = (1.0 + sqrt(5.0)) / 2.0
 	var verts = PackedVector3Array([

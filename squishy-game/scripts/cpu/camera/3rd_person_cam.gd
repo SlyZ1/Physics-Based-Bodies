@@ -12,7 +12,6 @@ var target_pos: Vector3 = Vector3.ZERO
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-
 func _follow_target(delta: float):
 	camera.position = Vector3(0, 0, distance)
 	var t: float = clamp(delta * 50 / target_damp, 0, 1)
@@ -23,8 +22,11 @@ func _follow_target(delta: float):
 func _process(delta: float) -> void:
 	_follow_target(delta)
 
+var glob_rot: Vector2
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		global_rotation.x -= sensibility * event.relative.y
-		global_rotation_degrees.x = clamp(global_rotation_degrees.x, -80, 10)
-		global_rotation.y -= sensibility * event.relative.x
+		glob_rot.x -= sensibility * event.relative.y
+		glob_rot.x = clamp(glob_rot.x, -PI/2 * 0.9, -PI/2 * 0.1)
+		glob_rot.y -= sensibility * event.relative.x
+		rotation.x = glob_rot.x
+		rotation.y = glob_rot.y

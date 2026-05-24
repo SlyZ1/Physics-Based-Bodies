@@ -10,6 +10,7 @@ func _ready() -> void:
 	set_process_unhandled_input(true)
 
 func _unhandled_input(event: InputEvent) -> void:
+	return
 	if event is InputEventMouseButton and event.pressed:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		_captured = true
