@@ -68,16 +68,17 @@ func get_squeleton_center() -> Vector3:
 func get_real_center() -> Vector3:
 	return pos_center
 	
-func get_radius_in_dir(dir: Vector3) -> float:
-	var best_dot = -INF
-	var best_radius = radius
+func get_vertex_in_dir(dir: Vector3) -> int:
+	var best_dot: float = -INF
+	var index: int = -1
 	for i in range(pos.size()):
-		var n = (pos_center - pos[i]).normalized()
-		var d = n.dot(dir.normalized())
+		var n: Vector3 = (pos_center - pos[i]).normalized()
+		var d: float = n.dot(dir.normalized())
 		if d > best_dot:
 			best_dot = d
-			best_radius = (pos_center - pos[i]).length()
-	return best_radius
+			index = i
+			if best_dot > 0.99: break
+	return index
 	
 func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	if reset_vel_acc:

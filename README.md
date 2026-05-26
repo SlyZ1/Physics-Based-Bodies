@@ -17,32 +17,39 @@ _The squeleton is in fact just a normal sphere whitout deformations_
 
 The positions of the squeleton are only affected by the real positions during collisions to recalculate the center of the mesh.
 
-### Controls
----
-
-`WASD` _(or ZQSD for EU)_ : Move \
-`Space` : Jump \
-
-#### For debug purposes
+### Controls for debug purposes
 `G` : Toggle gizmos \
-`P` : Pause the simulation and switch to free cam
+`P` : Pause the simulation
 
 ### How to use
 ---
 
+#### Usage Example
+```gdscript
+class_name MoveSquishy
+extends Node
+
+@export var squishy: Squishy #reference of simple_squishy.gd in the scene
+
+@export var move_speed: float = 10
+
+func _process(dt: float) -> void:
+    if Input.is_key_pressed(KEY_Z):
+        squishy.add_glob_acc(Vector3.FORWARD * move_speed)
+```
+
 > [!WARNING]
 > Please do not modify any variable or use any function of the script that are not mentionned below, in order to prevent from unwanted behaviors
-
 #### Public methods:
 
 - `add_glob_acc(acc: Vector3) -> void` : add an acceleration to the squeleton
 - `add_glob_vel(vel: Vector3) -> void` : add a velocity to the squeleton
 - `add_loc_acc(acc: Vector3, i: int) -> void` : add an acceleration to the number `i` vertex
 - `add_loc_vel(vel: Vector3, i: int) -> void` : add a velocity to the number `i` vertex
-- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real positions `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
+- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real positions to `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
 - `get_squeleton_center() -> Vector3` : Get the center of the squeleton
 - `get_real_center() -> Vector3` : Get the real center
-- `get_radius_in_dir(dir: Vector3) -> float` Get the radius of the deformed body in the direction `dir`
+- `get_vertex_in_dir(dir: Vector3) -> int` Get the vertex index of the deformed body that is in the direction `dir` in regards to the real center
 
 #### Public variables:
 
@@ -51,6 +58,7 @@ The positions of the squeleton are only affected by the real positions during co
 - `is_colliding` : RO, whether the body collides with something or not
 - `glob_acc` : RO, acceleration of the squeleton
 - `glob_vel` : RO, velocity of the squeleton
+
 
 ## `mesh_utils.gd`
 

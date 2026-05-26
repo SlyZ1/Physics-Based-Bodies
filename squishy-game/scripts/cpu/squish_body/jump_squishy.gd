@@ -35,7 +35,6 @@ func _process(dt: float) -> void:
 		is_jumping = false
 	else:
 		buffer_counter += dt
-	if is_jumping: print(is_jumping)
 		
 	if !is_jumping or !can_jump_coyotee or !can_jump:
 		return

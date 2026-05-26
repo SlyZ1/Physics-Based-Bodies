@@ -10,7 +10,9 @@ func _process(delta: float) -> void:
 	var offset: Vector3 = (global_position - center).normalized()
 	center = squishy.global_transform * squishy.pos_center
 	var new_offset: Vector3 = offset.slerp(last_dir, 8 * delta)
-	var radius: float = squishy.get_radius_in_dir(squishy.global_transform.basis.transposed() * new_offset)
+	var v_index: int = squishy.get_vertex_in_dir(squishy.global_transform.basis.transposed() * new_offset)
+	var vertex: Vector3 = squishy.pos[v_index]
+	var radius: float = (vertex - squishy.get_real_center()).length()
 	global_position = center + new_offset * radius
 	
 	var move_force: Vector3 = move_squishy.get_move_force()
