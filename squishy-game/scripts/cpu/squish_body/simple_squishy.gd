@@ -27,6 +27,7 @@ extends MeshInstance3D
 @export_subgroup("Customization Factors")
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.5
+@export var max_velocity: float = 10
 
 @export_group("Debug")
 @export_range(0,1) var smooth_factor: float = 0.5
@@ -133,26 +134,37 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	var vel: Vector3 = glob_acc * dt
 	if is_colliding:
 		var u = anchor_vel.normalized()
-		var dot_vel: float = u.dot(glob_vel + vel * 0.55)
+		var dot_vel: float = u.dot(glob_vel + vel * 2 * anchor_vel.length() / dt)
 		vel -= u * min(dot_vel, 0) * (2 - energy_abs)
-		#vel += anchor_vel / dt
+		vel += 0.01 * anchor_vel / dt
 	
 	return vel
 	
 func _compute_MD(center: Vector3) -> Vector3:
+	if !is_colliding: return Vector3.ZERO
+	
 	var mean: Vector3
+	var defo_basis: Basis
+	var up: Vector3 = anchor_vel.normalized()
+	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
+	var right: Vector3 = up.cross(ref).normalized()
+	var forward: Vector3 = right.cross(up).normalized()
+	defo_basis = Basis(right, up, forward)
 	for i in range(N):
-		var u: Vector3 = (pos[i] - center).abs()
+		var u: Vector3 = defo_basis.transposed() * (pos[i] - center)
+		u.y = abs(u.y)
 		mean += u.normalized() * (radius - u.length())
 	mean /= N
 	mean = mean.max(Vector3.ZERO)
+	mean = defo_basis * mean
 	return mean
 	
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
+	glob_vel = glob_vel.limit_length(max_velocity)
 	
-	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.02
+	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
 		

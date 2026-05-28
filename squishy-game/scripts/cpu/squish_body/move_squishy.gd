@@ -12,9 +12,9 @@ var anchor_vel: Vector3
 
 func get_move_force() -> Vector3:
 	var move_inputs: Vector2 = InputManager.get_move_inputs()
-	var move_up: Vector3 = Vector3.UP if anchor_vel.length() < 0.005 else anchor_vel.normalized() 
+	var move_up: Vector3 = Vector3.UP if !squishy.is_colliding else anchor_vel.normalized()
 	var move_forward: Vector3 = cam_container.global_basis.x.cross(move_up).normalized()
-	var move_right: Vector3 = cam_container.global_basis.x.normalized()
+	var move_right: Vector3 = move_up.cross(move_forward)
 	var movement: Vector3 = (move_right * move_inputs.x - move_forward * move_inputs.y)
 	movement *= ground_force if squishy.is_colliding else air_force
 	return movement

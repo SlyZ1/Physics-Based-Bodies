@@ -39,8 +39,9 @@ func _process(dt: float) -> void:
 	if !is_jumping or !can_jump_coyotee or !can_jump:
 		return
 	can_jump = false
-	squishy.add_glob_acc(Vector3.UP * jump_force / dt)
-	squishy.add_glob_vel(-Vector3.DOWN * Vector3.DOWN.dot(squishy.glob_vel))
+	var up: Vector3 = squishy.anchor_vel.normalized()
+	squishy.add_glob_acc(up * jump_force / dt)
+	squishy.add_glob_vel(-up * up.dot(squishy.glob_vel))
 	
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("jump"):
