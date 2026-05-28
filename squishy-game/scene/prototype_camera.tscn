@@ -1,0 +1,72 @@
+[gd_scene load_steps=11 format=3 uid="uid://wc415y2x0bbr"]
+
+[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_wq2fx"]
+[ext_resource type="Script" path="res://scripts/cpu/basic_player_move.gd" id="2_o5nyf"]
+[ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="3_t2kpe"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_d8eqd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8ri27"]
+albedo_texture = ExtResource("1_wq2fx")
+uv1_scale = Vector3(10, 10, 10)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_byhv8"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_n1gb4"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lni3v"]
+sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
+sky_horizon_color = Color(0.378, 0.5936, 0.84, 1)
+ground_bottom_color = Color(0.2706, 0.481203, 0.82, 1)
+ground_horizon_color = Color(0.376471, 0.592157, 0.839216, 1)
+ground_curve = 0.251068
+sun_curve = 0.160766
+
+[sub_resource type="Sky" id="Sky_j1aij"]
+sky_material = SubResource("ProceduralSkyMaterial_lni3v")
+
+[sub_resource type="Environment" id="Environment_suimo"]
+background_mode = 2
+sky = SubResource("Sky_j1aij")
+
+[node name="TestScene" type="Node3D"]
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+mesh = SubResource("PlaneMesh_d8eqd")
+surface_material_override/0 = SubResource("StandardMaterial3D_8ri27")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera")]
+physics_interpolation_mode = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.07124, 0)
+script = ExtResource("2_o5nyf")
+move_speed = 3.425
+move_damping = 5.0
+camera = NodePath("../CameraContainer/Camera3D")
+
+[node name="VisualBody" type="MeshInstance3D" parent="CharacterBody3D"]
+physics_interpolation_mode = 1
+mesh = SubResource("CapsuleMesh_byhv8")
+
+[node name="CollisionBody" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("CapsuleShape3D_n1gb4")
+
+[node name="CameraTarget" type="Node3D" parent="CharacterBody3D"]
+physics_interpolation_mode = 1
+
+[node name="CameraContainer" type="Node3D" parent="." node_paths=PackedStringArray("target", "camera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06981, 4.39985)
+script = ExtResource("3_t2kpe")
+target = NodePath("../CharacterBody3D/CameraTarget")
+camera = NodePath("Camera3D")
+target_damp = 4.0
+sensibility = 0.001
+
+[node name="Camera3D" type="Camera3D" parent="CameraContainer"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_suimo")
