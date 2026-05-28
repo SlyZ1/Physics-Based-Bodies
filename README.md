@@ -62,4 +62,8 @@ func _process(dt: float) -> void:
 
 ## `mesh_utils.gd`
 
-TODO
+Most useful functions:
+- `smooth_mesh(mesh: Mesh, vertices: PackedVector3Array, neighbours: Array, factor: float) -> PackedVector3Array` : Smoothes a given mesh by a [0,1] factor.
+- `set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh` : Changes the positions of the vertices of `mesh`.
+- `compute_neighbors(mesh: Mesh) -> Array`: Gives an array of the neighbours for each vertices.
+- `create_icosphere(r: float, subs: int) -> ArrayMesh` : Creates an icosphere.
