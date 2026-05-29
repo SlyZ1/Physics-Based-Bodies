@@ -102,7 +102,7 @@ func get_local_basis() -> Basis:
 	return Basis(right, up, forward)
 	
 func _ready() -> void:
-	mesh = MeshUtils.create_icosphere(0.5, 4)
+	mesh = MeshUtils.create_icosphere(0.5, 3)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
 	original_anchor_point_arr = anchor_point_arr.duplicate()
 	pos = anchor_point_arr.duplicate()
@@ -143,8 +143,7 @@ func _compute_glob_vel(dt: float) -> Vector3:
 		var u = anchor_vel.normalized()
 		var dot_vel: float = u.dot(glob_vel + vel * 2 * anchor_vel.length() / dt)
 		vel -= u * min(dot_vel, 0) * (2 - energy_abs)
-		vel += 0.01 * anchor_vel / dt
-	
+		vel += 0.01 * anchor_vel
 	return vel
 	
 	
@@ -259,7 +258,9 @@ func _process(dt: float) -> void:
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
-	if !pause: _physics(dt)
+	if !pause: 
+		var safe_dt = min(dt, 1.0 / 45.0)
+		_physics(safe_dt)
 		
 	_refresh_mesh()
 	_handle_gizmos()
