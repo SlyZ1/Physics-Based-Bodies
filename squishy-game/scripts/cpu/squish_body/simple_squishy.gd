@@ -94,6 +94,13 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	squeleton_center *= 0
 	pos_center *= 0
 	
+func get_local_basis() -> Basis:
+	var up: Vector3 = Vector3.UP if anchor_vel.length_squared() < 1e-5 else anchor_vel.normalized() 
+	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
+	var right: Vector3 = up.cross(ref).normalized()
+	var forward: Vector3 = right.cross(up).normalized()
+	return Basis(right, up, forward)
+	
 func _ready() -> void:
 	mesh = MeshUtils.create_icosphere(0.5, 4)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
@@ -140,16 +147,12 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	
 	return vel
 	
+	
 func _compute_MD(center: Vector3) -> Vector3:
 	if !is_colliding: return Vector3.ZERO
 	
 	var mean: Vector3
-	var defo_basis: Basis
-	var up: Vector3 = anchor_vel.normalized()
-	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
-	var right: Vector3 = up.cross(ref).normalized()
-	var forward: Vector3 = right.cross(up).normalized()
-	defo_basis = Basis(right, up, forward)
+	var defo_basis: Basis = get_local_basis()
 	for i in range(N):
 		var u: Vector3 = defo_basis.transposed() * (pos[i] - center)
 		u.y = abs(u.y)
@@ -162,7 +165,10 @@ func _compute_MD(center: Vector3) -> Vector3:
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
-	glob_vel = glob_vel.limit_length(max_velocity)
+	var loc_basis: Basis = get_local_basis()
+	glob_vel = loc_basis.transposed() * glob_vel
+	glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
+	glob_vel = loc_basis * glob_vel
 	
 	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
 	for i in range(N):
@@ -242,14 +248,14 @@ func _physics(dt: float) -> void:
 	
 func _refresh_mesh() -> void:
 	var vertices = MeshUtils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
+	var mesh_center: Vector3 = MeshUtils.get_center(vertices)
 	mesh = MeshUtils.set_vertices(mesh, vertices)
-	center_node.global_position = global_transform * MeshUtils.get_center(vertices)
+	center_node.global_position = global_transform * mesh_center
 	custom_aabb = AABB()
 	
 var pause = false
 func _process(dt: float) -> void:
-	dt = clamp(dt, 0, 0.05)
-	#dt /= 3
+	_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
@@ -257,4 +263,3 @@ func _process(dt: float) -> void:
 		
 	_refresh_mesh()
 	_handle_gizmos()
-	_handle_fps()
