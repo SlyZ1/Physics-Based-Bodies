@@ -51,6 +51,8 @@ var is_colliding: bool
 var squeleton: Array[Node3D] = []
 var neighbours: Array
 
+var bounce_force: Vector3
+
 func add_glob_acc(acc: Vector3) -> void:
 	glob_acc += acc
 	
@@ -139,11 +141,6 @@ func _compute_glob_acc(dt: float) -> Vector3:
 	
 func _compute_glob_vel(dt: float) -> Vector3:
 	var vel: Vector3 = glob_acc * dt
-	if is_colliding:
-		var u = anchor_vel.normalized()
-		var dot_vel: float = u.dot(glob_vel + vel * 2 * anchor_vel.length() / dt)
-		vel -= u * min(dot_vel, 0) * (2 - energy_abs)
-		vel += 0.01 * anchor_vel
 	return vel
 	
 	
@@ -200,6 +197,7 @@ func _integrate(dt: float) -> void:
 		loc_acc[i] += - resistance + center_spring + aero_force * dt
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
+		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
 		loc_acc[i] *= 0
 	glob_acc *= 0
 		
@@ -207,7 +205,7 @@ func _collide(dt: float) -> void:
 	var inverse_transform = global_transform.inverse()
 	var zero_world: Vector3 = inverse_transform * Vector3.ZERO
 	var ground_up: Vector3 = (global_transform.basis.transposed() * ground_node.global_basis.y).normalized()
-	var ground_pos: float = (inverse_transform * ground_node.global_position).dot(ground_up)
+	var ground_pos: float = (inverse_transform * ground_node.global_position).dot(ground_up) + 1e-2
 	is_colliding = false
 	for i in range(N):
 		var v_pos: float = pos[i].dot(ground_up)
@@ -215,12 +213,27 @@ func _collide(dt: float) -> void:
 		if v_pos < ground_pos:
 			loc_vel[i] -= ground_up * ground_up.dot(loc_vel[i])
 			is_colliding = true
+			
+			var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
+			var anchor_spring: Vector3 = k/m * anchor_offset
+			
+			var normal: Vector3 = (pos[i] - pos_center)
+			var dist_to_center: float = normal.length()
+			if dist_to_center > 1e-6: normal /= dist_to_center
+			var angle: float = normal.angle_to(anchor_point_arr[i])
+			var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
+			
+			var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
+			glob_vel -= ground_up * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
 	if !is_colliding:
 		return
 	anchor_vel = pos_center - old_pos_center
+	for i in range(N):
+		anchor_point_arr[i] += anchor_vel
+	squeleton_center += anchor_vel
 
 func _handle_gizmos() -> void:
 	if center_gizmo.get_parent_node_3d().visible: 
