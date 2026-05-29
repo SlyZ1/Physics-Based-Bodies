@@ -121,6 +121,18 @@ static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh:
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
 	return arr_mesh
 	
+static func fast_set_vertices(mesh: Mesh, mesh_rid: RID, vertices: PackedVector3Array, bounds: AABB) -> void:
+	var surface: Array = mesh.surface_get_arrays(0)
+	surface[Mesh.ARRAY_VERTEX] = vertices
+	RenderingServer.mesh_surface_update_vertex_region(
+		mesh_rid, 0, 0, 
+		vertices.to_byte_array()
+	)
+	RenderingServer.mesh_set_custom_aabb(
+		mesh_rid,
+		bounds
+	)
+	
 static func set_triangles(mesh: Mesh, triangles: PackedInt32Array) -> ArrayMesh:
 	var surface: Array = mesh.surface_get_arrays(0)
 	surface[Mesh.ARRAY_INDEX] = triangles

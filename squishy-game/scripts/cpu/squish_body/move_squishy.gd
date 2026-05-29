@@ -21,17 +21,17 @@ func get_move_force() -> Vector3:
 	
 func _process(delta: float) -> void:
 	anchor_vel = squishy.anchor_vel
-	squishy.add_glob_acc(get_move_force())
+	squishy.add_glob_vel(get_move_force() * delta)
 	
 	if squishy.is_colliding:
 		var u = anchor_vel.normalized()
 		var dot_vel: float = u.dot(squishy.glob_vel)
 		var tang_vel: Vector3 = squishy.glob_vel - u * dot_vel
 		var ground_frict: Vector3 = -tang_vel * ground_friction
-		squishy.add_glob_acc(ground_frict)
+		squishy.add_glob_vel(ground_frict * delta)
 	else:
 		var u = Vector3.UP
 		var dot_vel: float = u.dot(squishy.glob_vel)
 		var tang_vel: Vector3 = squishy.glob_vel - u * dot_vel
 		var air_frict: Vector3 = -tang_vel * air_friction
-		squishy.add_glob_acc(air_frict)
+		squishy.add_glob_vel(air_frict * delta)
