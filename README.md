@@ -2,68 +2,49 @@
 
 Platformer game on Godot 4.3 that plays with the physics of squishy bodies.
 
-## `simple_squishy.gd`
+## `rigid_body.gd`
 ### Quick explanation
 ---
 
-This script is responsible for handling all the forces applied to the main character.
+This script handles a simple rigid body simulation for a mesh, including linear and angular dynamics, collision response with a ground plane, and friction.
 
-To make the body look "squishy", we used a spring based soft body along with an Euler integrator. For each vertices, 2 springs are assigned:
-- <b>One linked to a default position</b>, to make sure the shape is relatively conserved 
-- <b>One linked to the center</b>, to make sure a certain radius is maintained, ensuring a simple volume conservation
+Collision response is computed per-vertex using **impulse-based resolution**, taking into account the inverse inertia tensor to correctly distribute forces between linear and angular velocities.
 
-The real positions of the vertices are separated from the positions of the "squeleton" (the default positions mentionned above). \
-_The squeleton is in fact just a normal sphere whitout deformations_
-
-The positions of the squeleton are only affected by the real positions during collisions to recalculate the center of the mesh.
+The inverse inertia tensor is computed from the mesh's local scale (assuming a box shape) and rotated into world space each frame.
 
 ### Controls for debug purposes
-`G` : Toggle gizmos \
-`P` : Pause the simulation
+`Jump` (via `InputManager`) : Reset and restart the simulation with a random rotation
 
 ### How to use
 ---
 
 #### Usage Example
 ```gdscript
-class_name MoveSquishy
+class_name ThrowRigidBody
 extends Node
 
-@export var squishy: Squishy #reference of simple_squishy.gd in the scene
+@export var body: RigidBody # reference of rigid_body.gd in the scene
 
-@export var move_speed: float = 10
-
-func _process(dt: float) -> void:
-    if Input.is_key_pressed(KEY_Z):
-        squishy.add_glob_acc(Vector3.FORWARD * move_speed)
+func _ready() -> void:
+    body.add_vel(Vector3(5, 10, 0))
+    body.add_angular_vel(Vector3(0, 2, 1))
 ```
 
 > [!WARNING]
 > Please do not modify any variable or use any function of the script that are not mentionned below, in order to prevent from unwanted behaviors
+
 #### Public methods:
 
-- `add_glob_acc(acc: Vector3) -> void` : add an acceleration to the squeleton
-- `add_glob_vel(vel: Vector3) -> void` : add a velocity to the squeleton
-- `add_loc_acc(acc: Vector3, i: int) -> void` : add an acceleration to the number `i` vertex
-- `add_loc_vel(vel: Vector3, i: int) -> void` : add a velocity to the number `i` vertex
-- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real positions to `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
-- `get_squeleton_center() -> Vector3` : Get the center of the squeleton
-- `get_real_center() -> Vector3` : Get the real center
-- `get_vertex_in_dir(dir: Vector3) -> int` Get the vertex index of the deformed body that is in the direction `dir` in regards to the real center
+- `add_vel(vel: Vector3) -> void` : add a linear velocity to the body
+- `add_acc(acc: Vector3) -> void` : add a linear acceleration to the body
+- `add_angular_vel(vel: Vector3) -> void` : add an angular velocity to the body
+- `add_angular_acc(acc: Vector3) -> void` : add an angular acceleration to the body
+- `add_impact(origin: Vector3, force: Vector3) -> void` : apply an impulse force at a world-space `origin` point, affecting both linear and angular velocities accordingly
 
 #### Public variables:
 
 - `N` : RO, number of vertices
-- `radius` : RO, radius of the sphere
-- `is_colliding` : RO, whether the body collides with something or not
-- `glob_acc` : RO, acceleration of the squeleton
-- `glob_vel` : RO, velocity of the squeleton
-
-
-## `mesh_utils.gd`
-
-Most useful functions:
-- `smooth_mesh(mesh: Mesh, vertices: PackedVector3Array, neighbours: Array, factor: float) -> PackedVector3Array` : Smoothes a given mesh by a [0,1] factor.
-- `set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh` : Changes the positions of the vertices of `mesh`.
-- `compute_neighbors(mesh: Mesh) -> Array`: Gives an array of the neighbours for each vertices.
-- `create_icosphere(r: float, subs: int) -> ArrayMesh` : Creates an icosphere.
+- `is_colliding` : RO, whether the body is currently colliding with the ground
+- `glob_vel` : RO, current linear velocity of the body
+- `glob_angular_vel` : RO, current angular velocity of the body
+- `inverse_inertia_tensor` : RO, current inverse inertia tensor in world space

@@ -45,7 +45,7 @@ albedo_color = Color(1, 0.32, 0.32, 1)
 [node name="SimpleSquishy" type="Node3D"]
 
 [node name="Ground" type="MeshInstance3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
+transform = Transform3D(9.84808, -1.73648, 0, 1.73648, 9.84808, 0, 0, 0, 10, 0, -0.3, 0)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
