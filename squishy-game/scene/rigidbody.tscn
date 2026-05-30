@@ -30,6 +30,18 @@ sky = SubResource("Sky_4rfvc")
 
 [node name="SimpleSquishy" type="Node3D"]
 
+[node name="Ground2" type="MeshInstance3D" parent="."]
+transform = Transform3D(7.30508, 6.82904, 0, -6.82904, 7.30508, 0, 0, 0, 10, 0.0466266, 2.63902, 0)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../Ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Ground3" type="MeshInstance3D" parent="."]
+transform = Transform3D(4.55219, -8.9038, 0, 8.9038, 4.55219, 0, 0, 0, 10, 6.22956, 2.63902, 0)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../Ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
 [node name="Ground" type="MeshInstance3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
 mesh = SubResource("PlaneMesh_nkany")
@@ -42,17 +54,16 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
 
-[node name="Rigidbody" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground_node")]
+[node name="Rigidbody" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground_nodes")]
 transform = Transform3D(-1.25452e-07, 1, 0, -2.87, -4.37114e-08, 0, 0, 0, 1, 0, 8.71886, 0)
 mesh = SubResource("BoxMesh_4rvfm")
 script = ExtResource("2_fl1v8")
-ground_node = NodePath("../Ground")
+ground_nodes = [NodePath("../Ground"), NodePath("../Ground2"), NodePath("../Ground3")]
 g = 20.0
-m = 2.0
-energy_absorption = 0.475
+energy_absorption = 0.211
 linear_damping = 1.0
 angular_damping = 1.0
-friction_factor = 10.0
+friction_factor = 1.0
 
 [node name="CameraContainer" type="Node3D" parent="." node_paths=PackedStringArray("target", "camera")]
 transform = Transform3D(0.245, 0, 0, 0, 0.229209, 0.0865333, 0, -0.0865333, 0.229209, 0, 0.262103, 1.62728)
