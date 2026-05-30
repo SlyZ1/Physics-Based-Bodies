@@ -268,7 +268,6 @@ func _physics(dt: float) -> void:
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
 	_collide(dt)
-	print(collision_dir)
 	_recenter(dt, old_center)
 	old_pos = pos.duplicate()
 	
