@@ -48,7 +48,7 @@ uv1_scale = Vector3(10, 10, 10)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.216395, 0)
 
 [node name="Ground2" type="MeshInstance3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 4.11594, -9.11367, 0, 9.11367, 4.11594, 0, -0.3, -4.51848)
+transform = Transform3D(10, 0, 0, 0, 8.9688, -4.42273, 0, 4.42273, 8.9688, 0.0493083, 0.738142, -4.51848)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 

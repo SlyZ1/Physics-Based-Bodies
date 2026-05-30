@@ -46,10 +46,12 @@ func _process(dt: float) -> void:
 - `add_glob_vel(vel: Vector3) -> void` : add a velocity to the squeleton
 - `add_loc_acc(acc: Vector3, i: int) -> void` : add an acceleration to the number `i` vertex
 - `add_loc_vel(vel: Vector3, i: int) -> void` : add a velocity to the number `i` vertex
-- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real positions to `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
+- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real 
+positions to `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
 - `get_squeleton_center() -> Vector3` : Get the center of the squeleton
 - `get_real_center() -> Vector3` : Get the real center
-- `get_vertex_in_dir(dir: Vector3) -> int` Get the vertex index of the deformed body that is in the direction `dir` in regards to the real center
+- `get_vertex_in_dir(dir: Vector3) -> int` : Get the vertex index of the deformed body that is in the direction `dir` in regards to the real center
+- `get_local_basis() -> Basis` : Get the basis with the mean collision normal as the up vector, and looking at the direction of the camera. If `is_colliding` is false, the up vector is `Vector3.UP`
 
 #### Public variables:
 
