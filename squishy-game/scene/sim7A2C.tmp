@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=17 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -6,6 +6,13 @@
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/eye.gd" id="5_jqas6"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
+albedo_color = Color(1, 1, 1, 0.517647)
+albedo_texture = ExtResource("1_ppqmt")
+uv1_scale = Vector3(10, 10, 10)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
 sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
@@ -35,17 +42,12 @@ albedo_color = Color(1, 0.32, 0.32, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_sq561"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_p533i"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
-albedo_color = Color(1, 1, 1, 0.517647)
-albedo_texture = ExtResource("1_ppqmt")
-uv1_scale = Vector3(10, 10, 10)
-
 [node name="SimpleSquishy" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.216395, 0)
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
+mesh = SubResource("PlaneMesh_nkany")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Ground2" type="MeshInstance3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 4.11594, -9.11367, 0, 9.11367, 4.11594, 0, -0.3, -4.51848)
@@ -59,12 +61,25 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
 
-[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("colliders_parent", "center_node", "center_gizmo")]
+[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground_nodes", "center_node", "center_gizmo")]
 mesh = SubResource("SphereMesh_hjnoc")
 script = ExtResource("2_60v1p")
-colliders_parent = NodePath("../Colliding Objects")
+ground_nodes = [NodePath("../Ground"), NodePath("../Ground2")]
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
+move_force = 40.0
+jump_force = 15.0
+g = 20.0
+air_damping = 0.01
+friction_factor = 0.0
+m = 0.2
+center_damping = 4.0
+aero_factor = 10.0
+cp_back = 0.5
+energy_abs = 0.457
+squish_factor = 0.583
+max_velocity = 15.0
+smooth_factor = 1.0
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")
@@ -112,31 +127,3 @@ distance = 20.0
 sensibility = 0.001
 
 [node name="Camera3D" type="Camera3D" parent="CameraContainer"]
-
-[node name="Colliding Objects" type="Node" parent="."]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(26.9104, 0.394423, 0, -11.5505, 0.918928, 0, 0, 0, 7.22336, -19.6039, 4.64914, -0.361072)
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, 0, 0, 7.45093)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, -22.7404, 4.34665, -9.24338)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="Ground" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
-mesh = SubResource("PlaneMesh_nkany")
-skeleton = NodePath("../..")
-surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
-
-[node name="Ground2" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -42.6456, 8.25786, 3.8147e-06)
-mesh = SubResource("PlaneMesh_nkany")
-skeleton = NodePath("../..")
-surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")

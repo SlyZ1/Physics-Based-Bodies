@@ -14,7 +14,6 @@ extends MeshInstance3D
 @export_subgroup("Global")
 @export var g: float = 9.8
 @export var air_damping: float = 0.1
-@export var friction_factor: float = 3
 @export_subgroup("Springs")
 @export var k: float = 50
 @export var m: float = 0.1
@@ -41,11 +40,13 @@ var anch_spring_vel: PackedVector3Array = []
 var glob_acc: Vector3
 var glob_vel: Vector3
 var pos: PackedVector3Array = []
+var old_pos: PackedVector3Array = []
 var N: int
 var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
 
+var collision_dir: Vector3
 var anchor_vel: Vector3
 var is_colliding: bool
 var squeleton: Array[Node3D] = []
@@ -98,7 +99,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	pos_center *= 0
 	
 func get_local_basis() -> Basis:
-	var up: Vector3 = Vector3.UP if anchor_vel.length_squared() < 1e-5 else anchor_vel.normalized() 
+	var up: Vector3 = Vector3.UP if !is_colliding else collision_dir 
 	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
 	var right: Vector3 = up.cross(ref).normalized()
 	var forward: Vector3 = right.cross(up).normalized()
@@ -114,6 +115,7 @@ func _ready() -> void:
 	loc_vel.resize(N)
 	anch_spring_acc.resize(N)
 	anch_spring_vel.resize(N)
+	old_pos.resize(N)
 	mesh = MeshUtils.set_vertices(mesh, pos)
 	var center: Vector3 = MeshUtils.get_center(pos)
 	radius = (center - pos[0]).length()
@@ -222,7 +224,7 @@ func _integrate(dt: float) -> void:
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
 		loc_acc[i] *= 0
 	glob_acc *= 0
-		
+
 func _ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tri: Dictionary) -> Variant:
 	const EPSILON = 0.0000001
 	var v0 = tri.v0
@@ -306,7 +308,7 @@ func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
 	if !is_colliding:
 		return
-	anchor_vel = pos_center - old_pos_center
+	anchor_vel = (pos_center - old_pos_center).length() * collision_dir
 	for i in range(N):
 		anchor_point_arr[i] += anchor_vel
 	squeleton_center += anchor_vel
@@ -315,7 +317,7 @@ func _handle_gizmos() -> void:
 	if center_gizmo.get_parent_node_3d().visible: 
 		center_gizmo.global_position = global_transform * MeshUtils.get_center(anchor_point_arr)
 		for i in range(N):
-			squeleton[i].global_position = global_transform * pos[i]
+			squeleton[i].global_position = global_transform * anchor_point_arr[i]
 
 var iteration: int
 var mean_fps: float
@@ -331,12 +333,12 @@ func _physics(dt: float) -> void:
 	var old_pos = pos.duplicate()
 	
 	_integrate(dt)
-	
-	var old_pos_center = MeshUtils.get_center(pos)
-	
-	_collide(dt, old_pos)
-	_recenter(dt, old_pos_center)
+	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
+	_collide(dt)
+	print(collision_dir)
+	_recenter(dt, old_center)
+	old_pos = pos.duplicate()
 	
 func _refresh_mesh() -> void:
 	var vertices = MeshUtils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
@@ -347,7 +349,7 @@ func _refresh_mesh() -> void:
 	
 var pause = false
 func _process(dt: float) -> void:
-	_handle_fps()
+	#_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
