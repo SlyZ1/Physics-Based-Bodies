@@ -2,7 +2,7 @@ class_name Squishy
 extends MeshInstance3D
 
 @export_group("Scene")
-@export var ground_node: Node3D
+@export var ground_nodes: Array[Node3D]
 @export var center_node: Node3D
 @export var center_gizmo: Node3D
 
@@ -14,7 +14,6 @@ extends MeshInstance3D
 @export_subgroup("Global")
 @export var g: float = 9.8
 @export var air_damping: float = 0.1
-@export var friction_factor: float = 3
 @export_subgroup("Springs")
 @export var k: float = 50
 @export var m: float = 0.1
@@ -41,11 +40,13 @@ var anch_spring_vel: PackedVector3Array = []
 var glob_acc: Vector3
 var glob_vel: Vector3
 var pos: PackedVector3Array = []
+var old_pos: PackedVector3Array = []
 var N: int
 var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
 
+var collision_dir: Vector3
 var anchor_vel: Vector3
 var is_colliding: bool
 var squeleton: Array[Node3D] = []
@@ -97,7 +98,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	pos_center *= 0
 	
 func get_local_basis() -> Basis:
-	var up: Vector3 = Vector3.UP if anchor_vel.length_squared() < 1e-5 else anchor_vel.normalized() 
+	var up: Vector3 = Vector3.UP if !is_colliding else collision_dir 
 	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
 	var right: Vector3 = up.cross(ref).normalized()
 	var forward: Vector3 = right.cross(up).normalized()
@@ -113,6 +114,7 @@ func _ready() -> void:
 	loc_vel.resize(N)
 	anch_spring_acc.resize(N)
 	anch_spring_vel.resize(N)
+	old_pos.resize(N)
 	mesh = MeshUtils.set_vertices(mesh, pos)
 	var center: Vector3 = MeshUtils.get_center(pos)
 	radius = (center - pos[0]).length()
@@ -202,35 +204,45 @@ func _integrate(dt: float) -> void:
 	glob_acc *= 0
 		
 func _collide(dt: float) -> void:
+	is_colliding = false
 	var inverse_transform = global_transform.inverse()
 	var zero_world: Vector3 = inverse_transform * Vector3.ZERO
-	var ground_up: Vector3 = (global_transform.basis.transposed() * ground_node.global_basis.y).normalized()
-	var ground_pos: float = (inverse_transform * ground_node.global_position).dot(ground_up) + 1e-2
-	is_colliding = false
-	for i in range(N):
-		var v_pos: float = pos[i].dot(ground_up)
-		pos[i] = (pos[i] - ground_up * v_pos) + ground_up * max(v_pos, ground_pos)
-		if v_pos < ground_pos:
-			loc_vel[i] -= ground_up * ground_up.dot(loc_vel[i])
-			is_colliding = true
-			
-			var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
-			var anchor_spring: Vector3 = k/m * anchor_offset
-			
-			var normal: Vector3 = (pos[i] - pos_center)
-			var dist_to_center: float = normal.length()
-			if dist_to_center > 1e-6: normal /= dist_to_center
-			var angle: float = normal.angle_to(anchor_point_arr[i])
-			var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
-			
-			var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
-			glob_vel -= ground_up * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
+	var new_collision_dir: Vector3
+	for ground_node in ground_nodes:
+		var ground_up: Vector3 = (global_transform.basis.transposed() * ground_node.global_basis.y).normalized()
+		var ground_center: Vector3 = inverse_transform * ground_node.global_position
+		var ground_pos: float = ground_center.dot(ground_up) + 1e-2
+		for i in range(N):
+			var v_pos: float = pos[i].dot(ground_up)
+			var old_v_pos: float = old_pos[i].dot(ground_up)
+			var v_pos_collide: bool = v_pos < ground_pos && (pos[i] - ground_center).length() < 10 * sqrt(2)
+			var old_v_pos_collide: bool = old_v_pos < ground_pos
+			if v_pos_collide && !old_v_pos_collide:
+				var test = (squeleton_center - anchor_point_arr[i]).normalized()
+				new_collision_dir += test
+				
+				pos[i] = (pos[i] - ground_up * v_pos) + ground_up * max(v_pos, ground_pos + 1e-4)
+				loc_vel[i] -= (2 - energy_abs) * ground_up * ground_up.dot(loc_vel[i])
+				is_colliding = true
+				
+				var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
+				var anchor_spring: Vector3 = k/m * anchor_offset
+				
+				var normal: Vector3 = (pos[i] - pos_center)
+				var dist_to_center: float = normal.length()
+				if dist_to_center > 1e-6: normal /= dist_to_center
+				var angle: float = normal.angle_to(anchor_point_arr[i])
+				var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
+				
+				var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
+				glob_vel -= ground_up * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
+	if is_colliding: collision_dir = new_collision_dir.normalized()
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
 	if !is_colliding:
 		return
-	anchor_vel = pos_center - old_pos_center
+	anchor_vel = (pos_center - old_pos_center).length() * collision_dir
 	for i in range(N):
 		anchor_point_arr[i] += anchor_vel
 	squeleton_center += anchor_vel
@@ -239,7 +251,7 @@ func _handle_gizmos() -> void:
 	if center_gizmo.get_parent_node_3d().visible: 
 		center_gizmo.global_position = global_transform * MeshUtils.get_center(anchor_point_arr)
 		for i in range(N):
-			squeleton[i].global_position = global_transform * pos[i]
+			squeleton[i].global_position = global_transform * anchor_point_arr[i]
 
 var iteration: int
 var mean_fps: float
@@ -253,10 +265,12 @@ func _handle_fps() -> void:
 
 func _physics(dt: float) -> void:
 	_integrate(dt)
-	var old_pos_center = MeshUtils.get_center(pos)
-	_collide(dt)
-	_recenter(dt, old_pos_center)
+	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
+	_collide(dt)
+	print(collision_dir)
+	_recenter(dt, old_center)
+	old_pos = pos.duplicate()
 	
 func _refresh_mesh() -> void:
 	var vertices = MeshUtils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
@@ -267,7 +281,7 @@ func _refresh_mesh() -> void:
 	
 var pause = false
 func _process(dt: float) -> void:
-	_handle_fps()
+	#_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
