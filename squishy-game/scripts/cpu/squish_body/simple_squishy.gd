@@ -46,7 +46,7 @@ var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
 
-var collision_dir: Vector3
+var collision_dir: Vector3 = Vector3.UP
 var anchor_vel: Vector3
 var is_colliding: bool
 var squeleton: Array[Node3D] = []
@@ -266,6 +266,7 @@ func _ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tri: Dic
 func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
+	var new_collision_dir: Vector3 = Vector3.ZERO
 	
 	for i in range(N):
 		# 1. Use the actual old position saved from before integration
@@ -281,7 +282,6 @@ func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 		
 		# 3. Test segment against every triangle in the world
 		for tri in collision_triangles:
-			# Pass global_start as the ray origin
 			var hit_pos = _ray_intersects_triangle(global_start, ray_vector, tri)
 			if hit_pos != null:
 				var dist = global_start.distance_squared_to(hit_pos)
@@ -300,9 +300,34 @@ func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 			var hit_local_normal: Vector3 = (global_transform.basis.transposed() * best_hit_normal).normalized()
 			
 			# Project the vertex to the surface + a tiny offset
-			pos[i] = hit_local_pos + (hit_local_normal * 0.001)
+			pos[i] = hit_local_pos + (hit_local_normal * 1e-2)
 			
-			loc_vel[i] -= hit_local_normal.normalized() * hit_local_normal.normalized().dot(loc_vel[i])
+			# Accumulate collision direction
+			var test = (squeleton_center - anchor_point_arr[i]).normalized()
+			new_collision_dir += test
+			
+			# Bounce local velocity using the custom energy_abs formula
+			var normal_velocity: float = hit_local_normal.dot(loc_vel[i])
+			if normal_velocity < 0: # Only bounce if moving INTO the surface
+				loc_vel[i] -= (2 - energy_abs) * hit_local_normal * normal_velocity
+			
+			# Calculate internal spring compression to push back global velocity
+			var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
+			var anchor_spring: Vector3 = k/m * anchor_offset
+			
+			var normal: Vector3 = (pos[i] - pos_center)
+			var dist_to_center: float = normal.length()
+			if dist_to_center > 1e-6: normal /= dist_to_center
+			var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
+			
+			# Apply the global velocity pushback using the global normal
+			var dot_prod: float = hit_local_normal.dot(anchor_spring + center_spring)
+			glob_vel -= best_hit_normal * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
+
+	# Set the combined collision direction if we hit anything this frame
+	#if is_colliding: 
+		#collision_dir = new_collision_dir.normalized()
+
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
@@ -335,7 +360,7 @@ func _physics(dt: float) -> void:
 	_integrate(dt)
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
-	_collide(dt)
+	_collide(dt, old_pos)
 	_recenter(dt, old_center)
 	old_pos = pos.duplicate()
 	
@@ -348,7 +373,7 @@ func _refresh_mesh() -> void:
 	
 var pause = false
 func _process(dt: float) -> void:
-	#_handle_fps()
+	_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause

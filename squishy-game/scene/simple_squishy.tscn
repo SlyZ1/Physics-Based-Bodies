@@ -45,16 +45,16 @@ albedo_texture = ExtResource("1_ppqmt")
 uv1_scale = Vector3(10, 10, 10)
 
 [node name="SimpleSquishy" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.216395, 0)
-
-[node name="Ground2" type="MeshInstance3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 8.9688, -4.42273, 0, 4.42273, 8.9688, 0.0493083, 0.738142, -4.51848)
-mesh = SubResource("PlaneMesh_nkany")
-surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
 shadow_enabled = true
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.933, -7.75748, -13.2724)
+omni_range = 24.2788
+omni_attenuation = -0.714
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
@@ -125,7 +125,22 @@ layers = 3
 mesh = SubResource("BoxMesh_p533i")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, -22.7404, 4.34665, -9.24338)
+transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, -64.6722, 7.59528, -1.31652)
+layers = 3
+mesh = SubResource("BoxMesh_p533i")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -43.7567, 12.4772, 7.32382)
+layers = 3
+mesh = SubResource("BoxMesh_p533i")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -44.4475, 17.333, 0.525723)
+layers = 3
+mesh = SubResource("BoxMesh_p533i")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -64.6722, 8.64715, -3.88876)
 layers = 3
 mesh = SubResource("BoxMesh_p533i")
 
