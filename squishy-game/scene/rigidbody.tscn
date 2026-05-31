@@ -28,7 +28,7 @@ sky = SubResource("Sky_4rfvc")
 
 [sub_resource type="BoxMesh" id="BoxMesh_4rvfm"]
 
-[node name="SimpleSquishy" type="Node3D"]
+[node name="SimpleSquishy2" type="Node3D"]
 
 [node name="Ground2" type="MeshInstance3D" parent="."]
 transform = Transform3D(7.30508, 6.82904, 0, -6.82904, 7.30508, 0, 0, 0, 10, 0.0466266, 2.63902, 0)
