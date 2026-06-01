@@ -136,27 +136,7 @@ func _ready() -> void:
 		dup.position = global_transform * anchor_point_arr[i]
 		center_gizmo.get_parent().add_child(dup)
 		squeleton.append(dup)
-	_extract_collider_geometry()
-
-func _extract_collider_geometry() -> void:
-	if not colliders_parent: return
-	
-	for child in colliders_parent.get_children():
-		if child is MeshInstance3D and child.mesh:
-			var faces = child.mesh.get_faces() 
-			var child_transform = child.global_transform
-			
-			for i in range(0, faces.size(), 3):
-				var v0 = child_transform * faces[i]
-				var v1 = child_transform * faces[i+1]
-				var v2 = child_transform * faces[i+2]
-				
-				# FIXED: Swapped v2 and v1 to reverse the cross product direction!
-				var normal = (v2 - v0).cross(v1 - v0).normalized()
-				
-				collision_triangles.append({
-					"v0": v0, "v1": v1, "v2": v2, "normal": normal
-				})
+	collision_triangles = MeshCollisions.extract_collider_geometry(colliders_parent)
 	
 func _compute_glob_acc(dt: float) -> Vector3:
 	var gravity: Vector3 = g * Vector3.DOWN
@@ -225,95 +205,37 @@ func _integrate(dt: float) -> void:
 		loc_acc[i] *= 0
 	glob_acc *= 0
 
-func _ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tri: Dictionary) -> Variant:
-	const EPSILON = 0.0000001
-	var v0 = tri.v0
-	var v1 = tri.v1
-	var v2 = tri.v2
-	
-	var edge1 = v1 - v0
-	var edge2 = v2 - v0
-	var h = ray_vector.cross(edge2)
-	var a = edge1.dot(h)
-	
-	# If 'a' is close to 0, the ray is parallel to the triangle
-	if a > -EPSILON and a < EPSILON:
-		return null
-		
-	var f = 1.0 / a
-	var s = ray_origin - v0
-	var u = f * s.dot(h)
-	
-	# Ray misses the triangle
-	if u < 0.0 or u > 1.0:
-		return null
-		
-	var q = s.cross(edge1)
-	var v = f * ray_vector.dot(q)
-	
-	# Ray misses the triangle
-	if v < 0.0 or u + v > 1.0:
-		return null
-		
-	var t = f * edge2.dot(q)
-	
-	# t <= 1.0 ensures the hit happens WITHIN the segment (between old_pos and new_pos)
-	if t > EPSILON and t <= 1.0:
-		return ray_origin + (ray_vector * t)
-		
-	return null
-
 func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	var new_collision_dir: Vector3 = Vector3.ZERO
 	
 	for i in range(N):
-		# 1. Use the actual old position saved from before integration
 		var global_start: Vector3 = global_transform * old_pos[i]
 		var global_end: Vector3 = global_transform * pos[i]
 		
-		# 2. Ray goes FROM start TO end
-		var ray_vector: Vector3 = global_end - global_start 
-		
-		var best_hit_pos: Variant = null
-		var best_hit_normal: Vector3
-		var min_dist: float = INF
-		
-		# 3. Test segment against every triangle in the world
-		for tri in collision_triangles:
-			var hit_pos = _ray_intersects_triangle(global_start, ray_vector, tri)
-			if hit_pos == null:
-				continue
-			var hit_along_normal = global_end - (global_end - hit_pos).dot(tri.normal) * tri.normal
-			var dist = global_start.distance_squared_to(hit_along_normal)
-			if dist < min_dist:
-				min_dist = dist
-				best_hit_pos = hit_along_normal
-				best_hit_normal = tri.normal
-		
-		# 4. If we hit something, resolve the collision
+		var best_hit = MeshCollisions.intersect_nearest_triangle(collision_triangles, global_start, global_end)
+		var best_hit_pos = best_hit["pos"]
+		var best_hit_normal = best_hit["normal"]
+
 		if best_hit_pos != null:
 			is_colliding = true
 			
-			# Convert world hit data back to the blob's local space
 			var hit_local_pos: Vector3 = inverse_transform * best_hit_pos
-			# For normals, multiplying by the transposed basis handles non-uniform scaling safely
 			var hit_local_normal: Vector3 = (global_transform.basis.transposed() * best_hit_normal).normalized()
 			
-			# Project the vertex to the surface + a tiny offset
+			# Little offset to ensure the mesh stays on top of the collider
 			pos[i] = hit_local_pos + (hit_local_normal * 1e-2)
 			
 			# Accumulate collision direction
-			var test = (squeleton_center - anchor_point_arr[i]).normalized()
-			new_collision_dir += test
+			if hit_local_normal.dot(Vector3.UP) > 0:
+				var test = (squeleton_center - anchor_point_arr[i]).normalized()
+				new_collision_dir += test
 			
-			# Bounce local velocity using the custom energy_abs formula
 			var normal_velocity: float = hit_local_normal.dot(loc_vel[i])
-			if normal_velocity < 0: # Only bounce if moving INTO the surface
+			if normal_velocity < 0:
 				loc_vel[i] -= (2 - energy_abs) * hit_local_normal * normal_velocity
-			
-			# Calculate internal spring compression to push back global velocity
+
 			var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 			var anchor_spring: Vector3 = k/m * anchor_offset
 			
@@ -322,12 +244,12 @@ func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 			if dist_to_center > 1e-6: normal /= dist_to_center
 			var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
 			
-			# Apply the global velocity pushback using the global normal
 			var dot_prod: float = hit_local_normal.dot(anchor_spring + center_spring)
 			glob_vel -= best_hit_normal * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
 
-	# Set the combined collision direction if we hit anything this frame
 	if is_colliding: 
+		if new_collision_dir.length() == 0.0:
+			new_collision_dir = Vector3.UP
 		collision_dir = new_collision_dir.normalized()
 
 
