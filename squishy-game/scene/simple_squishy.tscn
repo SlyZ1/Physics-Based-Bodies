@@ -68,17 +68,7 @@ script = ExtResource("2_60v1p")
 ground_nodes = [NodePath("../Ground"), NodePath("../Ground2")]
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
-move_force = 40.0
-jump_force = 15.0
-g = 20.0
-air_damping = 0.01
-m = 0.2
-center_damping = 4.0
-aero_factor = 0.0
 cp_back = 0.5
-squish_factor = 0.583
-max_velocity = 15.0
-smooth_factor = 1.0
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")

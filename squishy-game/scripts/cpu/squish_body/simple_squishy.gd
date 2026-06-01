@@ -6,30 +6,26 @@ extends MeshInstance3D
 @export var center_node: Node3D
 @export var center_gizmo: Node3D
 
-@export_group("Movement")
-@export var move_force: float = 10
-@export var jump_force: float = 10
-
 @export_group("Physics")
 @export_subgroup("Global")
-@export var g: float = 9.8
-@export var air_damping: float = 0.1
+@export var g: float = 20
+@export var air_damping: float = 0.01
 @export_subgroup("Springs")
 @export var k: float = 50
-@export var m: float = 0.1
-@export var center_damping: float = 2
+@export var m: float = 0.2
+@export var center_damping: float = 4
 @export var squeleton_damping: float = 20
 @export_subgroup("Aerodynamism")
-@export var aero_factor: float = 0.01
+@export var aero_factor: float = 0
 @export var cp_front: float = 0.9
 @export var cp_back: float = 0.4
 @export_subgroup("Customization Factors")
 @export_range(0,1) var energy_abs: float = 0.5
-@export_range(0,1) var squish_factor: float = 0.5
-@export var max_velocity: float = 10
+@export_range(0,1) var squish_factor: float = 0.583
+@export var max_velocity: float = 15
 
 @export_group("Debug")
-@export_range(0,1) var smooth_factor: float = 0.5
+@export_range(0,1) var smooth_factor: float = 1
 
 var original_anchor_point_arr: PackedVector3Array
 var anchor_point_arr: PackedVector3Array
