@@ -283,12 +283,14 @@ func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 		# 3. Test segment against every triangle in the world
 		for tri in collision_triangles:
 			var hit_pos = _ray_intersects_triangle(global_start, ray_vector, tri)
-			if hit_pos != null:
-				var dist = global_start.distance_squared_to(hit_pos)
-				if dist < min_dist:
-					min_dist = dist
-					best_hit_pos = hit_pos
-					best_hit_normal = tri.normal
+			if hit_pos == null:
+				continue
+			var hit_along_normal = global_end - (global_end - hit_pos).dot(tri.normal) * tri.normal
+			var dist = global_start.distance_squared_to(hit_along_normal)
+			if dist < min_dist:
+				min_dist = dist
+				best_hit_pos = hit_along_normal
+				best_hit_normal = tri.normal
 		
 		# 4. If we hit something, resolve the collision
 		if best_hit_pos != null:
@@ -325,8 +327,8 @@ func _collide(dt: float, old_pos: PackedVector3Array) -> void:
 			glob_vel -= best_hit_normal * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
 
 	# Set the combined collision direction if we hit anything this frame
-	#if is_colliding: 
-		#collision_dir = new_collision_dir.normalized()
+	if is_colliding: 
+		collision_dir = new_collision_dir.normalized()
 
 
 func _recenter(dt: float, old_pos_center) -> void:
