@@ -10,6 +10,13 @@ extends MeshInstance3D
 @export var linear_damping: float = 0.1
 @export var angular_damping: float = 0.1
 @export var friction_factor: float = 3
+@export_subgroup("Restrictions")
+@export var restrict_linX: bool
+@export var restrict_linY: bool
+@export var restrict_linZ: bool
+@export var restrict_angX: bool
+@export var restrict_angY: bool
+@export var restrict_angZ: bool
 
 var vertices: PackedVector3Array
 var N: int
@@ -77,14 +84,22 @@ func _compute_inverse_inertia_tensor() -> Basis:
 	return rot * I_local_inv * rot.transposed()
 	
 func _integrate(dt: float) -> void:
+	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
+	restrict_lin = Vector3.ONE - restrict_lin
 	glob_acc += g * Vector3.DOWN - linear_damping * glob_vel / m
+	glob_acc *= restrict_lin
 	glob_vel += glob_acc * dt
-	#if glob_vel.length() < 0.1: glob_vel *= 0
+	glob_vel *= restrict_lin
+	
 	global_position += glob_vel * dt
 	glob_acc *= 0
 	
+	var restrict_ang: Vector3 = Vector3(restrict_angX, restrict_angY, restrict_angZ)
+	restrict_ang = Vector3.ONE - restrict_ang
 	glob_angular_acc += - angular_damping * glob_angular_vel / m
+	glob_angular_acc *= restrict_ang
 	glob_angular_vel += glob_angular_acc * dt
+	glob_angular_vel *= restrict_ang
 	#if glob_angular_vel.length() < 0.1: glob_angular_vel *= 0
 	if glob_angular_vel.length_squared() > 1e-6:
 		global_rotate(glob_angular_vel.normalized(), glob_angular_vel.length() * dt)
@@ -93,6 +108,8 @@ func _integrate(dt: float) -> void:
 	inverse_inertia_tensor = _compute_inverse_inertia_tensor()
 	
 func _collide(dt: float) -> void:
+	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
+	restrict_lin = Vector3.ONE - restrict_lin
 	for ground_node in ground_nodes:
 		var ground_up: Vector3 = ground_node.basis.y.normalized()
 		var ground_pos: float = ground_node.global_position.dot(ground_up)
@@ -115,7 +132,8 @@ func _collide(dt: float) -> void:
 				if d_vel < -0.01:
 					var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
 					add_impact(pos, collision_force)
-					global_position += ground_up * (ground_pos - v_pos) * 0.3
+					var correction: Vector3 = ground_up * (ground_pos - v_pos) * 0.3
+					global_position += correction * restrict_lin
 
 func _process(dt: float) -> void:
 	if InputManager.jumps(): _start_simulation()
