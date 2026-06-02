@@ -58,6 +58,13 @@ func add_impact(origin: Vector3, force: Vector3) -> void:
 	glob_vel += (j / m)
 	glob_angular_vel += inverse_inertia_tensor * r.cross(j)
 	is_sleeping = false
+	
+func add_force(origin: Vector3, force: Vector3) -> void:
+	if force.length() < 1e-8: return
+	var r = origin - global_position
+	glob_acc += force / m
+	glob_angular_acc += inverse_inertia_tensor * r.cross(force)
+	is_sleeping = false
 
 func _start_simulation() -> void:
 	glob_acc *= 0
@@ -93,7 +100,8 @@ func _compute_inverse_inertia_tensor() -> Basis:
 func _integrate(dt: float) -> void:
 	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
 	restrict_lin = Vector3.ONE - restrict_lin
-	glob_acc += g * Vector3.DOWN - linear_damping * glob_vel / m
+	glob_acc += g * Vector3.DOWN 
+	glob_acc -= linear_damping * glob_vel / m
 	glob_acc *= restrict_lin
 	glob_vel += glob_acc * dt
 	glob_vel *= restrict_lin
@@ -125,22 +133,25 @@ func _collide(dt: float) -> void:
 			var pos: Vector3 = global_transform * vertices[i]
 			var v_pos: float = pos.dot(ground_up)
 			var r: Vector3 = pos - global_transform.origin
-			if v_pos <= ground_pos:
+			var penetration: float = ground_pos - v_pos
+			
+			if penetration >= 0:
 				is_colliding = true
 				
 				var p_angular_vel: Vector3 = glob_angular_vel.cross(r)
 				var p_vel: Vector3 = glob_vel + p_angular_vel
-				var penetration: float = ground_pos - v_pos
 				var d_vel: float = ground_up.dot(p_vel)
 				
 				var slop: float = 0.001
-				if penetration > slop:
-					var tangent_vel: Vector3 = p_vel - ground_up * d_vel
-					var friction_force: Vector3 = -friction_factor * tangent_vel
-					add_impact(pos, friction_force)
-				
-					var correction = ground_up * (ground_pos - v_pos) * 0.3
+				var tangent_vel: Vector3 = p_vel - ground_up * d_vel
+				var friction_force: Vector3 = -friction_factor * tangent_vel
+				if d_vel < -0.5:
+					add_impact(pos, friction_force / friction_factor)
+				elif penetration > slop:
+					var correction = ground_up * (ground_pos - v_pos) * 0.1
 					global_position += correction * restrict_lin
+					
+					add_force(pos, friction_force)
 				
 				if d_vel < -0.01:
 					var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up

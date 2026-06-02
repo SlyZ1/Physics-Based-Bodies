@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bn7aa2bot4yh2"]
+[gd_scene load_steps=10 format=3 uid="uid://bdrfmjiw8ddx6"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_oinqk"]
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="2_fl1v8"]
@@ -60,10 +60,10 @@ mesh = SubResource("BoxMesh_4rvfm")
 script = ExtResource("2_fl1v8")
 ground_nodes = [NodePath("../Ground"), NodePath("../Ground2"), NodePath("../Ground3")]
 g = 20.0
-energy_absorption = 1.0
+energy_absorption = 0.67
 linear_damping = 1.0
 angular_damping = 1.0
-friction_factor = 0.35
+friction_factor = 10.0
 velocity_thresh = 0.1
 angular_velocity_thresh = 0.4
 sleep_delay = 0.7
