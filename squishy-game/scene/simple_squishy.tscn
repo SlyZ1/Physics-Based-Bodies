@@ -49,8 +49,13 @@ transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
+[node name="Ground3" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.25036e-07, -9.7237, 2.33445, 10, -4.37114e-07, 0, 1.02042e-07, 2.33445, 9.7237, 3.62036, 1.59624, 4.53041)
+mesh = SubResource("PlaneMesh_nkany")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
 [node name="Ground2" type="MeshInstance3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 8.9688, -4.42273, 0, 4.42273, 8.9688, 0.0493083, 0.738142, -4.51848)
+transform = Transform3D(4.28339e-07, 9.79924, 1.99368, 10, -4.37114e-07, 0, 8.71465e-08, 1.99368, -9.79924, -0.0768098, 0.738142, 4.18738)
 mesh = SubResource("PlaneMesh_nkany")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
@@ -62,13 +67,15 @@ shadow_enabled = true
 environment = SubResource("Environment_c8ed3")
 
 [node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("ground_nodes", "center_node", "center_gizmo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.869013, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.822327, 0.869013, 2.82649)
 mesh = SubResource("SphereMesh_hjnoc")
 script = ExtResource("2_60v1p")
-ground_nodes = [NodePath("../Ground"), NodePath("../Ground2")]
+ground_nodes = [NodePath("../Ground"), NodePath("../Ground2"), NodePath("../Ground3")]
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
 cp_back = 0.5
+energy_abs = 0.606
+squish_factor = 0.517
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")

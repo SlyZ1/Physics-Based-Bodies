@@ -195,6 +195,9 @@ func _integrate(dt: float) -> void:
 		loc_acc[i] += - resistance + center_spring + aero_force * dt
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
+		# To make it harder (less soft) on horizontal movement
+		pos[i] += (glob_vel - collision_dir * collision_dir.dot(glob_vel)) * dt
+		# Restrain maximum squish
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
 		loc_acc[i] *= 0
 	glob_acc *= 0
@@ -204,6 +207,7 @@ func _collide(dt: float) -> void:
 	var inverse_transform = global_transform.inverse()
 	var zero_world: Vector3 = inverse_transform * Vector3.ZERO
 	var new_collision_dir: Vector3
+	var repulsion_force: Vector3
 	for ground_node in ground_nodes:
 		var ground_up: Vector3 = (global_transform.basis.transposed() * ground_node.global_basis.y).normalized()
 		var ground_center: Vector3 = inverse_transform * ground_node.global_position
@@ -213,13 +217,14 @@ func _collide(dt: float) -> void:
 			var old_v_pos: float = old_pos[i].dot(ground_up)
 			var v_pos_collide: bool = v_pos < ground_pos && (pos[i] - ground_center).length() < 10 * sqrt(2)
 			var old_v_pos_collide: bool = old_v_pos < ground_pos
-			if v_pos_collide && !old_v_pos_collide:
-				var test = (squeleton_center - anchor_point_arr[i]).normalized()
-				new_collision_dir += test
+			if v_pos_collide:
+				if Vector3.UP.dot(ground_up) > 0:
+					var test = (squeleton_center - anchor_point_arr[i]).normalized()
+					new_collision_dir += test
+				is_colliding = true
 				
 				pos[i] = (pos[i] - ground_up * v_pos) + ground_up * max(v_pos, ground_pos + 1e-4)
 				loc_vel[i] -= (2 - energy_abs) * ground_up * ground_up.dot(loc_vel[i])
-				is_colliding = true
 				
 				var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 				var anchor_spring: Vector3 = k/m * anchor_offset
@@ -231,8 +236,14 @@ func _collide(dt: float) -> void:
 				var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
 				
 				var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
-				glob_vel -= ground_up * min(dot_prod, 0) * (1 + 1.5 * (1 - energy_abs)) * dt / N
-	if is_colliding: collision_dir = new_collision_dir.normalized()
+				var soft: float = 1
+				if ground_up.dot(Vector3.UP) < 0.1:
+					soft = 0
+				var softness_factor: float = 1 + 6 * (1 - soft)
+				var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
+				glob_vel -= softness_factor * ground_up * min(dot_prod, 0) * energy_abs_factor * dt / N
+	if is_colliding && new_collision_dir.length() > 1e-8: 
+		collision_dir = new_collision_dir.normalized()
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
