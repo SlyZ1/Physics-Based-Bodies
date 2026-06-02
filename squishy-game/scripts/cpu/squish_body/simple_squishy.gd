@@ -24,7 +24,6 @@ extends MeshInstance3D
 @export_group("Debug")
 @export_range(0,1) var smooth_factor: float = 1
 
-var original_anchor_point_arr: PackedVector3Array
 var anchor_point_arr: PackedVector3Array
 var loc_acc: PackedVector3Array = []
 var loc_vel: PackedVector3Array = []
@@ -99,9 +98,9 @@ func get_local_basis() -> Basis:
 	return Basis(right, up, forward)
 	
 func _ready() -> void:
+	# INITIALIZE ARRAYS AND DATA
 	mesh = MeshUtils.create_icosphere(0.5, 3)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
-	original_anchor_point_arr = anchor_point_arr.duplicate()
 	pos = anchor_point_arr.duplicate()
 	N = anchor_point_arr.size();
 	loc_acc.resize(N)
@@ -114,6 +113,7 @@ func _ready() -> void:
 	radius = (center - pos[0]).length()
 	neighbours = MeshUtils.compute_neighbors(mesh)
 	
+	# SETUP GIZMOS (for debug purposes)
 	for i in range(N):
 		var mat = StandardMaterial3D.new()
 		mat.no_depth_test = true
@@ -139,7 +139,7 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	var vel: Vector3 = glob_acc * dt
 	return vel
 	
-	
+# COMPUTES MEAN DEFORMATION
 func _compute_MD(center: Vector3) -> Vector3:
 	if !is_colliding: return Vector3.ZERO
 	
@@ -157,6 +157,8 @@ func _compute_MD(center: Vector3) -> Vector3:
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
+	
+	# CLAMP MAX "VERTICAL" (along normal) VELOCITY
 	var loc_basis: Basis = get_local_basis()
 	glob_vel = loc_basis.transposed() * glob_vel
 	glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
@@ -166,28 +168,36 @@ func _integrate(dt: float) -> void:
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
 		
+		# SQUELETON SPRING FORCE
 		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 		var anchor_spring: Vector3 = k/m * anchor_offset
 		
+		# REAL CENTER SPRING FORCE
 		var normal: Vector3 = (pos[i] - pos_center)
 		var dist_to_center: float = normal.length()
 		if dist_to_center > 1e-8: normal /= dist_to_center
 		var angle: float = normal.angle_to(anchor_point_arr[i])
+			## CUSTOM SQUISH RADIUS
 		var deformation: float = mean_deformation.cross(normal).length()
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
-		var resistance: Vector3 = center_damping * loc_vel[i]
-		
+		# SQUELETON SPRINGS ACC & VEL
 		anch_spring_acc[i] = anchor_spring - squeleton_damping * anch_spring_vel[i]
 		anch_spring_vel[i] += anch_spring_acc[i] * dt
-		loc_acc[i] += - resistance + center_spring
+		
+		# OTHER ACC & VEL
+		loc_acc[i] += center_spring - center_damping * loc_vel[i]
 		loc_vel[i] += loc_acc[i] * dt
+		
+		# INTEGRATION
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
-		# To make it harder (less soft) on horizontal movement
+		
+		# HORIZONTAL HARDNESS
 		pos[i] += (glob_vel - collision_dir * collision_dir.dot(glob_vel)) * horizontal_hardness * dt
-		# Restrain maximum squish
+		# RESTRAIN MAX SQUISH
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
+		
 		loc_acc[i] *= 0
 	glob_acc *= 0
 		
@@ -213,25 +223,30 @@ func _collide(dt: float) -> void:
 					new_collision_dir += test
 				is_colliding = true
 				
+				# DEPENETRATE
 				pos[i] = (pos[i] - ground_up * v_pos) + ground_up * max(v_pos, ground_pos + 1e-4)
 				loc_vel[i] -= (2 - energy_abs) * ground_up * ground_up.dot(loc_vel[i])
 				
+				# SQUELETON SPRING REPULSION
 				var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 				var anchor_spring: Vector3 = k/m * anchor_offset
 				
+				# CENTER SPRING REPULSION
 				var normal: Vector3 = (pos[i] - pos_center)
 				var dist_to_center: float = normal.length()
 				if dist_to_center > 1e-6: normal /= dist_to_center
 				var angle: float = normal.angle_to(anchor_point_arr[i])
 				var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
 				
+				# REBOUND PARAMETERS
 				var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
-				var hardness: float = 0
-				if ground_up.dot(Vector3.UP) < 0.1:
-					hardness = horizontal_hardness
+				var hardness: float = horizontal_hardness if ground_up.dot(Vector3.UP) < 0.1 else 0
 				var softness_factor: float = 1 + 6 * pow(hardness, 2)
 				var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
+				
+				# REBOUND
 				glob_vel -= softness_factor * ground_up * min(dot_prod, 0) * energy_abs_factor * dt / N
+				
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
 	if is_colliding && mean_collision_normal.length() > 1e-5:
@@ -280,7 +295,7 @@ func _refresh_mesh() -> void:
 	
 var pause = false
 func _process(dt: float) -> void:
-	#_handle_fps()
+	_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
