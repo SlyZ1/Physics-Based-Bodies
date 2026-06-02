@@ -73,7 +73,7 @@ script = ExtResource("2_60v1p")
 ground_nodes = [NodePath("../Ground"), NodePath("../Ground2"), NodePath("../Ground3")]
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
-cp_back = 0.5
+horizontal_hardness = 1.0
 energy_abs = 0.606
 squish_factor = 0.517
 

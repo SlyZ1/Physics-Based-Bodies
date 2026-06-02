@@ -15,11 +15,8 @@ extends MeshInstance3D
 @export var m: float = 0.2
 @export var center_damping: float = 4
 @export var squeleton_damping: float = 20
-@export_subgroup("Aerodynamism")
-@export var aero_factor: float = 0
-@export var cp_front: float = 0.9
-@export var cp_back: float = 0.4
 @export_subgroup("Customization Factors")
+@export_range(0,1) var horizontal_hardness
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.583
 @export var max_velocity: float = 15
@@ -42,6 +39,7 @@ var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
 
+var mean_collision_normal: Vector3
 var collision_dir: Vector3
 var anchor_vel: Vector3
 var is_colliding: bool
@@ -179,24 +177,15 @@ func _integrate(dt: float) -> void:
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
-		var speed: float = (loc_vel[i] + anch_spring_vel[i]).length()
-		var vel_dir: Vector3 = Vector3.ZERO if speed < 1e-8 else (loc_vel[i] + anch_spring_vel[i]) / speed
-		var aero_deform: float = speed * speed * aero_factor
-		var cos_angle: float = vel_dir.dot(normal)
-		var aero_force: Vector3
-		if cos_angle < 0:
-			var pressure: float = aero_deform * cp_back * abs(cos_angle)
-			aero_force += -pressure * vel_dir
-		
 		var resistance: Vector3 = center_damping * loc_vel[i]
 		
 		anch_spring_acc[i] = anchor_spring - squeleton_damping * anch_spring_vel[i]
 		anch_spring_vel[i] += anch_spring_acc[i] * dt
-		loc_acc[i] += - resistance + center_spring + aero_force * dt
+		loc_acc[i] += - resistance + center_spring
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
 		# To make it harder (less soft) on horizontal movement
-		pos[i] += (glob_vel - collision_dir * collision_dir.dot(glob_vel)) * dt
+		pos[i] += (glob_vel - collision_dir * collision_dir.dot(glob_vel)) * horizontal_hardness * dt
 		# Restrain maximum squish
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
 		loc_acc[i] *= 0
@@ -217,7 +206,8 @@ func _collide(dt: float) -> void:
 			var old_v_pos: float = old_pos[i].dot(ground_up)
 			var v_pos_collide: bool = v_pos < ground_pos && (pos[i] - ground_center).length() < 10 * sqrt(2)
 			var old_v_pos_collide: bool = old_v_pos < ground_pos
-			if v_pos_collide:
+			if v_pos_collide && !old_v_pos_collide:
+				mean_collision_normal += ground_up
 				if Vector3.UP.dot(ground_up) > 0:
 					var test = (squeleton_center - anchor_point_arr[i]).normalized()
 					new_collision_dir += test
@@ -236,14 +226,17 @@ func _collide(dt: float) -> void:
 				var center_spring: Vector3 = k/m * normal * (radius - dist_to_center)
 				
 				var dot_prod: float = ground_up.dot(anchor_spring + center_spring)
-				var soft: float = 1
+				var hardness: float = 0
 				if ground_up.dot(Vector3.UP) < 0.1:
-					soft = 0
-				var softness_factor: float = 1 + 6 * (1 - soft)
+					hardness = horizontal_hardness
+				var softness_factor: float = 1 + 6 * pow(hardness, 2)
 				var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
 				glob_vel -= softness_factor * ground_up * min(dot_prod, 0) * energy_abs_factor * dt / N
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
+	if is_colliding && mean_collision_normal.length() > 1e-5:
+		mean_collision_normal = mean_collision_normal.normalized()
+	else: mean_collision_normal = collision_dir
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
