@@ -4,6 +4,7 @@ extends MeshInstance3D
 @export_group("Scene")
 @export var ground_nodes: Array[Node3D]
 @export var center_node: Node3D
+@export var squeleton_center_gizmo: Node3D
 @export var center_gizmo: Node3D
 
 @export_group("Physics")
@@ -38,6 +39,7 @@ var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
 
+var mean_collision_point: Vector3
 var mean_collision_normal: Vector3
 var collision_dir: Vector3
 var anchor_vel: Vector3
@@ -90,8 +92,8 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	squeleton_center *= 0
 	pos_center *= 0
 	
-func get_local_basis() -> Basis:
-	var up: Vector3 = Vector3.UP if !is_colliding else collision_dir 
+func get_local_basis(up_vec: Vector3) -> Basis:
+	var up: Vector3 = Vector3.UP if up_vec.length() < 1e-8 else up_vec 
 	var ref: Vector3 = Vector3.FORWARD if abs(up.dot(Vector3.RIGHT)) > 0.9 else Vector3.RIGHT
 	var right: Vector3 = up.cross(ref).normalized()
 	var forward: Vector3 = right.cross(up).normalized()
@@ -139,38 +141,43 @@ func _compute_glob_vel(dt: float) -> Vector3:
 	var vel: Vector3 = glob_acc * dt
 	return vel
 	
-# COMPUTES MEAN DEFORMATION
+# COMPUTE MEAN DEFORMATION
 func _compute_MD(center: Vector3) -> Vector3:
 	if !is_colliding: return Vector3.ZERO
 	
 	var mean: Vector3
-	var defo_basis: Basis = get_local_basis()
+	var defo_basis: Basis = get_local_basis(mean_collision_normal)
 	for i in range(N):
 		var u: Vector3 = defo_basis.transposed() * (pos[i] - center)
 		u.y = abs(u.y)
-		mean += u.normalized() * (radius - u.length())
+		if radius > u.length():
+			mean += u.normalized() * (radius - u.length())
+			
 	mean /= N
 	mean = mean.max(Vector3.ZERO)
 	mean = defo_basis * mean
 	return mean
+	
+func _deformation_on_normal(md: Vector3, origin: Vector3, pos: Vector3) -> float:
+	var normal: Vector3 = (pos - origin).normalized()
+	var cross: float = md.normalized().cross(normal).length()
+	var deformation: float = cross * md.length()
+	return deformation
 	
 func _integrate(dt: float) -> void:
 	glob_acc += _compute_glob_acc(dt)
 	glob_vel += _compute_glob_vel(dt)
 	
 	# CLAMP MAX "VERTICAL" (along normal) VELOCITY
-	var loc_basis: Basis = get_local_basis()
+	var loc_basis: Basis = get_local_basis(collision_dir)
 	glob_vel = loc_basis.transposed() * glob_vel
 	glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
 	glob_vel = loc_basis * glob_vel
 	
-	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
+	var volume_center: Vector3 = MeshUtils.get_volume_center(pos, mesh)
+	var mean_deformation: Vector3 = _compute_MD(volume_center) / 0.01
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
-		
-		# SQUELETON SPRING FORCE
-		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
-		var anchor_spring: Vector3 = k/m * anchor_offset
 		
 		# REAL CENTER SPRING FORCE
 		var normal: Vector3 = (pos[i] - pos_center)
@@ -178,9 +185,15 @@ func _integrate(dt: float) -> void:
 		if dist_to_center > 1e-8: normal /= dist_to_center
 		var angle: float = normal.angle_to(anchor_point_arr[i])
 			## CUSTOM SQUISH RADIUS
-		var deformation: float = mean_deformation.cross(normal).length()
+		var deformation: float = _deformation_on_normal(mean_deformation, volume_center, pos[i])
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
+		
+		# SQUELETON SPRING FORCE
+		var custom_anchor_point: Vector3 = (anchor_point_arr[i] - squeleton_center).normalized()
+		custom_anchor_point = custom_anchor_point * custom_radius + squeleton_center
+		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
+		var anchor_spring: Vector3 = k/m * anchor_offset
 		
 		# SQUELETON SPRINGS ACC & VEL
 		anch_spring_acc[i] = anchor_spring - squeleton_damping * anch_spring_vel[i]
@@ -207,6 +220,7 @@ func _collide(dt: float) -> void:
 	var zero_world: Vector3 = inverse_transform * Vector3.ZERO
 	var new_collision_dir: Vector3
 	var repulsion_force: Vector3
+	var num_collision: int
 	for ground_node in ground_nodes:
 		var ground_up: Vector3 = (global_transform.basis.transposed() * ground_node.global_basis.y).normalized()
 		var ground_center: Vector3 = inverse_transform * ground_node.global_position
@@ -217,6 +231,8 @@ func _collide(dt: float) -> void:
 			var v_pos_collide: bool = v_pos < ground_pos && (pos[i] - ground_center).length() < 10 * sqrt(2)
 			var old_v_pos_collide: bool = old_v_pos < ground_pos
 			if v_pos_collide && !old_v_pos_collide:
+				num_collision += 1
+				mean_collision_point += pos[i]
 				mean_collision_normal += ground_up
 				if Vector3.UP.dot(ground_up) > 0:
 					var test = (squeleton_center - anchor_point_arr[i]).normalized()
@@ -247,6 +263,11 @@ func _collide(dt: float) -> void:
 				# REBOUND
 				glob_vel -= softness_factor * ground_up * min(dot_prod, 0) * energy_abs_factor * dt / N
 				
+	if num_collision > 0:
+		var vol_center = MeshUtils.get_volume_center(pos, mesh)
+		mean_collision_point /= num_collision
+		mean_collision_point -= vol_center
+	
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
 	if is_colliding && mean_collision_normal.length() > 1e-5:
@@ -264,7 +285,8 @@ func _recenter(dt: float, old_pos_center) -> void:
 
 func _handle_gizmos() -> void:
 	if center_gizmo.get_parent_node_3d().visible: 
-		center_gizmo.global_position = global_transform * MeshUtils.get_center(anchor_point_arr)
+		squeleton_center_gizmo.global_position = global_transform * squeleton_center
+		center_gizmo.global_position = global_transform * pos_center
 		for i in range(N):
 			squeleton[i].global_position = global_transform * anchor_point_arr[i]
 
@@ -295,13 +317,13 @@ func _refresh_mesh() -> void:
 	
 var pause = false
 func _process(dt: float) -> void:
-	_handle_fps()
+	#_handle_fps()
 	if Input.is_action_just_pressed("gizmos"):
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
 	if !pause: 
 		var safe_dt = min(dt, 1.0 / 45.0)
 		_physics(safe_dt)
-		
+
 	_refresh_mesh()
 	_handle_gizmos()
