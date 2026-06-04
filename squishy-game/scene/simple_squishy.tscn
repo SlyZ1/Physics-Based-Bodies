@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=20 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/eye.gd" id="5_jqas6"]
+[ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="7_i1acc"]
+[ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="8_std41"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
 
@@ -42,6 +44,8 @@ albedo_color = Color(1, 0.32, 0.32, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_sq561"]
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_8kl2u"]
+
 [node name="SimpleSquishy" type="Node3D"]
 
 [node name="Ground" type="MeshInstance3D" parent="."]
@@ -70,9 +74,9 @@ m = 0.2
 center_damping = 4.0
 aero_factor = 10.0
 cp_back = 0.5
-energy_abs = 0.164
+energy_abs = 0.412
 squish_factor = 1.0
-max_velocity = 15.0
+max_velocity = 30.0
 smooth_factor = 1.0
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
@@ -121,3 +125,23 @@ distance = 20.0
 sensibility = 0.001
 
 [node name="Camera3D" type="Camera3D" parent="CameraContainer"]
+
+[node name="Booster" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.065, 0, 0, 0, 1, 0, -0.320642, -2.74725)
+mesh = SubResource("CylinderMesh_8kl2u")
+script = ExtResource("7_i1acc")
+boost_intensity = 50.0
+distance_threshold = 1.0
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Booster"]
+transform = Transform3D(0.525, 0, 0, 0, 0.523077, 0, 0, 0, 0.525, 0, 0, 0.615458)
+mesh = SubResource("CylinderMesh_8kl2u")
+skeleton = NodePath("../..")
+
+[node name="Spring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.065, 0, 0, 0, 1, 2.08804, -0.320642, -2.74725)
+mesh = SubResource("CylinderMesh_8kl2u")
+script = ExtResource("8_std41")
+spring_intensity = 25.0
+spring_cooldown = 0.2
+distance_threshold = 1.0

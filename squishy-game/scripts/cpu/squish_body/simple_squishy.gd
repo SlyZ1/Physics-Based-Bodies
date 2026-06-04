@@ -51,6 +51,8 @@ var is_colliding: bool
 var squeleton: Array[Node3D] = []
 var neighbours: Array
 
+static var core: Squishy
+
 func add_glob_acc(acc: Vector3) -> void:
 	glob_acc += acc
 	
@@ -64,10 +66,10 @@ func add_loc_vel(vel: Vector3, i: int) -> void:
 	loc_vel[i] += vel
 	
 func get_squeleton_center() -> Vector3:
-	return squeleton_center
+	return global_transform * squeleton_center
 	
 func get_real_center() -> Vector3:
-	return pos_center
+	return global_transform * pos_center
 	
 func get_vertex_in_dir(dir: Vector3) -> int:
 	var best_dot: float = -INF
@@ -95,6 +97,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	pos_center *= 0
 	
 func _ready() -> void:
+	core = self
 	mesh = MeshUtils.create_icosphere(0.5, 4)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
 	original_anchor_point_arr = anchor_point_arr.duplicate()
@@ -257,4 +260,4 @@ func _process(dt: float) -> void:
 		
 	_refresh_mesh()
 	_handle_gizmos()
-	_handle_fps()
+	#_handle_fps()
