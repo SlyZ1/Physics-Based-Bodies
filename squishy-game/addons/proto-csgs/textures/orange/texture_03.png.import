@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5olgncs28chq"
-path="res://.godot/imported/texture_11.png-05a4014404d9c8ac568507dddc34c808.ctex"
+uid="uid://d3aw6hffb3vvv"
+path="res://.godot/imported/texture_03.png-495b4d6bbfbb977ff6f16dc30c987ae3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/proto-csgs/textures 2/orange/texture_11.png"
-dest_files=["res://.godot/imported/texture_11.png-05a4014404d9c8ac568507dddc34c808.ctex"]
+source_file="res://addons/proto-csgs/textures/orange/texture_03.png"
+dest_files=["res://.godot/imported/texture_03.png-495b4d6bbfbb977ff6f16dc30c987ae3.ctex"]
 
 [params]
 
@@ -31,4 +31,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

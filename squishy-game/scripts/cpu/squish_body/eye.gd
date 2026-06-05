@@ -8,7 +8,7 @@ var center: Vector3
 
 func _process(delta: float) -> void:
 	var offset: Vector3 = (global_position - center).normalized()
-	center = squishy.global_transform * squishy.get_real_center()
+	center = squishy.global_transform * squishy.pos_center
 	var new_offset: Vector3 = offset.slerp(last_dir, 8 * delta)
 	var v_index: int = squishy.get_vertex_in_dir(squishy.global_transform.basis.transposed() * new_offset)
 	var vertex: Vector3 = squishy.pos[v_index]
