@@ -19,6 +19,7 @@ var buffer_counter: float
 var is_jumping: bool 
 
 func _process(dt: float) -> void:
+	dt = min(dt, 1.0 / 45.0)
 	if jump_timer > jump_cd:
 		can_jump = true
 	else: jump_timer += dt
