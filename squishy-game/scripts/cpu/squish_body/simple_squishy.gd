@@ -153,8 +153,7 @@ func _compute_MD(center: Vector3) -> Vector3:
 	for i in range(N):
 		var u: Vector3 = defo_basis.transposed() * (pos[i] - center)
 		u.y = abs(u.y)
-		if radius > u.length():
-			mean += u.normalized() * (radius - u.length())
+		mean += u.normalized() * max(radius - u.length(), 0)
 	mean /= N
 	mean = mean.max(Vector3.ZERO)
 	mean = defo_basis * mean
@@ -177,7 +176,7 @@ func _integrate(dt: float) -> void:
 	glob_vel = loc_basis * glob_vel
 	
 	var volume_center: Vector3 = MeshUtils.get_volume_center(pos, mesh)
-	var mean_deformation: Vector3 = _compute_MD(volume_center) / 0.01
+	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
 		
@@ -186,7 +185,7 @@ func _integrate(dt: float) -> void:
 		var dist_to_center: float = normal.length()
 		if dist_to_center > 1e-8: normal /= dist_to_center
 		var angle: float = normal.angle_to(anchor_point_arr[i])
-		var deformation: float = _deformation_on_normal(mean_deformation, volume_center, pos[i])
+		var deformation: float = _deformation_on_normal(mean_deformation, pos_center, pos[i])
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
@@ -263,22 +262,18 @@ func _collide(dt: float) -> void:
 			# REBOUND PARAMETERS
 			var dot_prod: float = hit_local_normal.dot(anchor_spring + center_spring)
 			var hardness: float = horizontal_hardness if hit_local_normal.dot(Vector3.UP) < 0.1 else 0
-			var softness_factor: float = 1 + 6 * pow(hardness, 2)
+			var hardness_factor: float = 1 + 7 * pow(hardness, 2)
 			var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
 			
 			# REBOUND
-			glob_vel -= softness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N
-	
-	if num_collision > 0:
-		var vol_center = MeshUtils.get_volume_center(pos, mesh)
-		mean_collision_point /= num_collision
-		mean_collision_point -= vol_center
+			glob_vel -= hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N
 
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
 	if is_colliding && mean_collision_normal.length() > 1e-5:
 		mean_collision_normal = mean_collision_normal.normalized()
 	else: mean_collision_normal = collision_dir
+	print(collision_dir, " ", mean_collision_normal)
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
