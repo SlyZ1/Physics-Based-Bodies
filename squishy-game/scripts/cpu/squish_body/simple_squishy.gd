@@ -70,6 +70,9 @@ func get_squeleton_center() -> Vector3:
 func get_real_center() -> Vector3:
 	return global_transform * pos_center
 	
+func get_local_real_center() -> Vector3:
+	return pos_center
+	
 func get_pos() -> PackedVector3Array:
 	return pos
 	

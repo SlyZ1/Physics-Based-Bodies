@@ -89,9 +89,10 @@ jump_force = 15.0
 coyotee_time = 0.03
 jump_buffer_time = 0.1
 
-[node name="Deform" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+[node name="Deform" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("4_80gtl")
 squishy = NodePath("..")
+cam_container = NodePath("../../CameraContainer")
 
 [node name="Eye" type="MeshInstance3D" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
 transform = Transform3D(0.245, 0, 0, 0, 0.245, 0, 0, 0, 0.245, 0, 0, 0.549312)
