@@ -1,9 +1,10 @@
-[gd_scene load_steps=20 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=21 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="3_31lwa"]
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/eye.gd" id="5_jqas6"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
@@ -87,6 +88,10 @@ squishy = NodePath("..")
 jump_force = 15.0
 coyotee_time = 0.03
 jump_buffer_time = 0.1
+
+[node name="Deform" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+script = ExtResource("4_80gtl")
+squishy = NodePath("..")
 
 [node name="Eye" type="MeshInstance3D" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
 transform = Transform3D(0.245, 0, 0, 0, 0.245, 0, 0, 0, 0.245, 0, 0, 0.549312)

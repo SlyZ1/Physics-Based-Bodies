@@ -70,6 +70,9 @@ func get_squeleton_center() -> Vector3:
 func get_real_center() -> Vector3:
 	return global_transform * pos_center
 	
+func get_pos() -> PackedVector3Array:
+	return pos
+	
 func get_vertex_in_dir(dir: Vector3) -> int:
 	var best_dot: float = -INF
 	var index: int = -1
