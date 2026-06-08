@@ -6,30 +6,22 @@ extends MeshInstance3D
 @export var center_node: Node3D
 @export var center_gizmo: Node3D
 
-@export_group("Movement")
-@export var move_force: float = 10
-@export var jump_force: float = 10
-
 @export_group("Physics")
 @export_subgroup("Global")
-@export var g: float = 9.8
-@export var air_damping: float = 0.1
+@export var g: float = 20
+@export var air_damping: float = 0.01
 @export_subgroup("Springs")
 @export var k: float = 50
-@export var m: float = 0.1
-@export var center_damping: float = 2
+@export var m: float = 0.2
+@export var center_damping: float = 4
 @export var squeleton_damping: float = 20
-@export_subgroup("Aerodynamism")
-@export var aero_factor: float = 0.01
-@export var cp_front: float = 0.9
-@export var cp_back: float = 0.4
 @export_subgroup("Customization Factors")
 @export_range(0,1) var energy_abs: float = 0.5
 @export_range(0,1) var squish_factor: float = 0.5
-@export var max_velocity: float = 10
+@export var max_velocity: float = 15
 
 @export_group("Debug")
-@export_range(0,1) var smooth_factor: float = 0.5
+@export_range(0,1) var smooth_factor: float = 1
 
 var original_anchor_point_arr: PackedVector3Array
 var anchor_point_arr: PackedVector3Array
@@ -185,20 +177,11 @@ func _integrate(dt: float) -> void:
 		var custom_radius: float = radius * (1 + deformation * squish_factor)
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
-		var speed: float = (loc_vel[i] + anch_spring_vel[i]).length()
-		var vel_dir: Vector3 = Vector3.ZERO if speed < 1e-8 else (loc_vel[i] + anch_spring_vel[i]) / speed
-		var aero_deform: float = speed * speed * aero_factor
-		var cos_angle: float = vel_dir.dot(normal)
-		var aero_force: Vector3
-		if cos_angle < 0:
-			var pressure: float = aero_deform * cp_back * abs(cos_angle)
-			aero_force += -pressure * vel_dir
-		
 		var resistance: Vector3 = center_damping * loc_vel[i]
 		
 		anch_spring_acc[i] = anchor_spring - squeleton_damping * anch_spring_vel[i]
 		anch_spring_vel[i] += anch_spring_acc[i] * dt
-		loc_acc[i] += - resistance + center_spring + aero_force * dt
+		loc_acc[i] += - resistance + center_spring
 		loc_vel[i] += loc_acc[i] * dt
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
@@ -279,8 +262,6 @@ func _handle_fps() -> void:
 		iteration = 0
 
 func _physics(dt: float) -> void:
-	var old_pos = pos.duplicate()
-	
 	_integrate(dt)
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)

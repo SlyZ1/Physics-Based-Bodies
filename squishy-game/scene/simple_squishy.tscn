@@ -119,39 +119,8 @@ sensibility = 0.001
 transform = Transform3D(26.9104, 0.394423, 0, -11.5505, 0.918928, 0, 0, 0, 7.22336, -19.6039, 4.64914, -0.361072)
 mesh = SubResource("BoxMesh_p533i")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, 0, 0, 7.45093)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(29.2845, 0, 0, 0, 0.999999, 0, 0, 0, 7.22336, -64.6722, 7.59528, -1.31652)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -43.7567, 12.4772, 7.32382)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D6" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -44.4475, 17.333, 0.525723)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
-[node name="MeshInstance3D5" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(42.763, 0, 0, 0, 8.90659, 0, 0, 0, 10.548, -64.6722, 8.64715, -3.88876)
-layers = 3
-mesh = SubResource("BoxMesh_p533i")
-
 [node name="Ground" type="MeshInstance3D" parent="Colliding Objects"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
-mesh = SubResource("PlaneMesh_nkany")
-skeleton = NodePath("../..")
-surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
-
-[node name="Ground2" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -42.6456, 8.25786, 3.8147e-06)
 mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
