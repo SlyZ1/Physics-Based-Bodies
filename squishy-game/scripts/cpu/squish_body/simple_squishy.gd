@@ -50,6 +50,7 @@ var neighbours: Array
 var collision_triangles: Array = []
 
 var bounce_force: Vector3
+static var core: Squishy
 
 func add_glob_acc(acc: Vector3) -> void:
 	glob_acc += acc
@@ -64,10 +65,10 @@ func add_loc_vel(vel: Vector3, i: int) -> void:
 	loc_vel[i] += vel
 	
 func get_squeleton_center() -> Vector3:
-	return squeleton_center
+	return global_transform * squeleton_center
 	
 func get_real_center() -> Vector3:
-	return pos_center
+	return global_transform * pos_center
 	
 func get_vertex_in_dir(dir: Vector3) -> int:
 	var best_dot: float = -INF
@@ -103,6 +104,7 @@ func get_local_basis(up_vec: Vector3) -> Basis:
 	
 func _ready() -> void:
 	# INITIALIZE ARRAYS AND DATA
+	core = self
 	mesh = MeshUtils.create_icosphere(0.5, 3)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
 	pos = anchor_point_arr.duplicate()
@@ -272,7 +274,6 @@ func _collide(dt: float) -> void:
 	if is_colliding && mean_collision_normal.length() > 1e-5:
 		mean_collision_normal = mean_collision_normal.normalized()
 	else: mean_collision_normal = collision_dir
-	print(collision_dir, " ", mean_collision_normal)
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
