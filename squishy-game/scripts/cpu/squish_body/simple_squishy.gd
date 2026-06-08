@@ -175,7 +175,6 @@ func _integrate(dt: float) -> void:
 	glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
 	glob_vel = loc_basis * glob_vel
 	
-	var volume_center: Vector3 = MeshUtils.get_volume_center(pos, mesh)
 	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
 	for i in range(N):
 		anchor_point_arr[i] += glob_vel * dt
