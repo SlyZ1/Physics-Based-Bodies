@@ -113,6 +113,27 @@ static func get_center(arr: PackedVector3Array) -> Vector3:
 	center /= N
 	return center
 
+static func get_volume_center(arr: PackedVector3Array, mesh: Mesh) -> Vector3:
+	var total_volume: float = 0.0
+	var center: Vector3 = Vector3.ZERO
+
+	var surface: Array = mesh.surface_get_arrays(0)
+	var indices: PackedInt32Array = surface[Mesh.ARRAY_INDEX]
+
+	for i: int in range(0, indices.size(), 3):
+		var v0: Vector3 = arr[indices[i]]
+		var v1: Vector3 = arr[indices[i + 1]]
+		var v2: Vector3 = arr[indices[i + 2]]
+
+		var signed_volume: float = v0.dot(v1.cross(v2)) / 6.0
+		var centroid: Vector3 = (v0 + v1 + v2) / 4.0
+
+		total_volume += signed_volume
+		center += signed_volume * centroid
+
+	center /= total_volume
+	return center
+
 static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh:
 	var surface: Array = mesh.surface_get_arrays(0)
 	surface[Mesh.ARRAY_VERTEX] = vertices
