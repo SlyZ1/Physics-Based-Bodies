@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=22 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/eye.gd" id="5_jqas6"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_l32nw"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
 
@@ -43,7 +44,7 @@ albedo_color = Color(1, 0.32, 0.32, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
 albedo_color = Color(1, 1, 1, 0.517647)
 albedo_texture = ExtResource("1_ppqmt")
-uv1_scale = Vector3(10, 10, 10)
+uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
 
@@ -94,6 +95,11 @@ script = ExtResource("4_80gtl")
 squishy = NodePath("..")
 cam_container = NodePath("../../CameraContainer")
 
+[node name="Fall" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+script = ExtResource("5_l32nw")
+squishy = NodePath("..")
+min_height = -10.0
+
 [node name="Eye" type="MeshInstance3D" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
 transform = Transform3D(0.245, 0, 0, 0, 0.245, 0, 0, 0, 0.245, 0, 0, 0.549312)
 visible = false
@@ -135,7 +141,7 @@ sensibility = 0.001
 [node name="Colliding Objects" type="Node" parent="."]
 
 [node name="Ground" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, -0.3, 0)
 mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
@@ -153,28 +159,28 @@ skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Spring" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -17.4276, -4.14283)
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -17.4276, -14.2863)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("7_4onsn")
 spring_intensity = 20.0
 distance_threshold = 1.0
 
 [node name="Spring2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -11.9267, -4.14283)
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -11.9267, -14.2863)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("7_4onsn")
 spring_intensity = 20.0
 distance_threshold = 1.0
 
 [node name="Spring3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0714436, 0.699701, 0, -0.0699701, 0.714436, 0, -7.81678, -4.14283)
+transform = Transform3D(1, 0, 0, 0, 0.0714436, 0.699701, 0, -0.0699701, 0.714436, 0, -7.81678, -14.2863)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("7_4onsn")
 spring_intensity = 20.0
 distance_threshold = 1.0
 
 [node name="Booster" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -17.4276, -6.87251)
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -17.4276, -17.0159)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("8_wnw85")
 boost_intensity = 40.0

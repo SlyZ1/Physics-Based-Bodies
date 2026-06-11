@@ -98,6 +98,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 			loc_acc[i] *= 0
 			loc_vel[i] *= 0
 	pos = anchor_point_arr.duplicate()
+	old_pos = pos.duplicate()
 	squeleton_center *= 0
 	pos_center *= 0
 	
