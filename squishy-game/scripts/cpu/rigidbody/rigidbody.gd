@@ -1,4 +1,5 @@
 extends MeshInstance3D
+class_name Rigidbody
 
 @export_group("Scene")
 @export var ground_nodes: Array[Node3D]
@@ -145,13 +146,11 @@ func _collide(dt: float) -> void:
 				var slop: float = 0.001
 				var tangent_vel: Vector3 = p_vel - ground_up * d_vel
 				var friction_force: Vector3 = -friction_factor * tangent_vel
-				if d_vel < -0.5:
-					add_impact(pos, friction_force / friction_factor)
-				elif penetration > slop:
-					var correction = ground_up * (ground_pos - v_pos) * 0.1
+				if penetration > slop:
+					var correction = ground_up * (ground_pos - v_pos) * 0.3
 					global_position += correction * restrict_lin
 					
-					add_force(pos, friction_force)
+					add_impact(pos, friction_force)
 				
 				if d_vel < -0.01:
 					var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
@@ -159,7 +158,6 @@ func _collide(dt: float) -> void:
 					
 var sleep_timer: float
 func _sleep_check(dt: float) -> void:
-	print(glob_vel.length(), " ", glob_angular_vel.length())
 	if glob_vel.length() < velocity_thresh && glob_angular_vel.length() < angular_velocity_thresh:
 		sleep_timer += dt
 	else: sleep_timer = 0
@@ -168,7 +166,7 @@ func _sleep_check(dt: float) -> void:
 		sleep_timer = 0
 
 func _process(dt: float) -> void:
-	if InputManager.jumps(): _start_simulation()
+	#if InputManager.jumps(): _start_simulation()
 	dt = min(dt, 1.0 / 45.0)
 	
 	if is_sleeping: return

@@ -8,6 +8,8 @@ static func extract_collider_geometry(colliders_parent: Node) -> Array:
 		if child is MeshInstance3D and child.mesh:
 			var faces = child.mesh.get_faces() 
 			var child_transform = child.global_transform
+			var rb: Rigidbody = null
+			if child is Rigidbody: rb = child
 			
 			for i in range(0, faces.size(), 3):
 				var v0 = child_transform * faces[i]
@@ -17,7 +19,7 @@ static func extract_collider_geometry(colliders_parent: Node) -> Array:
 				var normal = (v2 - v0).cross(v1 - v0).normalized()
 				
 				collision_triangles.append({
-					"v0": v0, "v1": v1, "v2": v2, "normal": normal
+					"v0": v0, "v1": v1, "v2": v2, "normal": normal, "rb": rb
 				})
 	return collision_triangles
 
@@ -61,6 +63,7 @@ static func intersect_nearest_triangle(collision_triangles: Array, global_start,
 	
 	var best_hit_pos: Variant = null
 	var best_hit_normal: Vector3
+	var best_hit_rb: Rigidbody = null
 	var min_dist: float = INF
 
 	for tri in collision_triangles:
@@ -74,4 +77,5 @@ static func intersect_nearest_triangle(collision_triangles: Array, global_start,
 			min_dist = dist
 			best_hit_pos = hit_along_normal
 			best_hit_normal = tri.normal
-	return {"pos": best_hit_pos, "normal": best_hit_normal}
+			best_hit_rb = tri.rb
+	return {"pos": best_hit_pos, "normal": best_hit_normal, "rb": best_hit_rb}

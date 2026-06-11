@@ -2,7 +2,8 @@ class_name Squishy
 extends MeshInstance3D
 
 @export_group("Scene")
-@export var colliders_parent: Node
+@export var static_colliders_parent: Node
+@export var dynamic_colliders_parent: Node
 @export var center_node: Node3D
 @export var center_gizmo: Node3D
 @export var squeleton_center_gizmo: Node3D
@@ -47,7 +48,8 @@ var is_colliding: bool
 var anchor_vel: Vector3
 var squeleton: Array[Node3D] = []
 var neighbours: Array
-var collision_triangles: Array = []
+var static_collision_triangles: Array = []
+var dynamic_collision_triangles: Array = []
 
 var bounce_force: Vector3
 static var core: Squishy
@@ -142,7 +144,8 @@ func _ready() -> void:
 		dup.position = global_transform * anchor_point_arr[i]
 		center_gizmo.get_parent().add_child(dup)
 		squeleton.append(dup)
-	collision_triangles = MeshCollisions.extract_collider_geometry(colliders_parent)
+	static_collision_triangles = MeshCollisions.extract_collider_geometry(static_colliders_parent)
+	dynamic_collision_triangles = MeshCollisions.extract_collider_geometry(dynamic_colliders_parent)
 	
 func _compute_glob_acc(dt: float) -> Vector3:
 	var gravity: Vector3 = g * Vector3.DOWN
@@ -233,9 +236,11 @@ func _collide(dt: float) -> void:
 		var global_end: Vector3 = global_transform * pos[i]
 		
 		# FIND INTERSECTION
+		var collision_triangles: Array = static_collision_triangles + dynamic_collision_triangles
 		var best_hit = MeshCollisions.intersect_nearest_triangle(collision_triangles, global_start, global_end)
 		var best_hit_pos = best_hit["pos"]
 		var best_hit_normal = best_hit["normal"]
+		var best_hit_rb: Rigidbody = best_hit["rb"]
 
 		if best_hit_pos != null:
 			is_colliding = true
@@ -275,6 +280,8 @@ func _collide(dt: float) -> void:
 			
 			# REBOUND
 			glob_vel -= hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N
+			if best_hit_rb != null:
+				best_hit_rb.add_impact(old_pos[i], hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N)
 
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
@@ -309,6 +316,7 @@ func _handle_fps() -> void:
 		iteration = 0
 
 func _physics(dt: float) -> void:
+	dynamic_collision_triangles = MeshCollisions.extract_collider_geometry(dynamic_colliders_parent)
 	_integrate(dt)
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
@@ -330,7 +338,7 @@ func _process(dt: float) -> void:
 		center_gizmo.get_parent_node_3d().visible = !center_gizmo.get_parent_node_3d().visible
 	if Input.is_action_just_pressed("pause"): pause = !pause
 	if !pause: 
-		var safe_dt = min(dt, 1.0 / 45.0)
+		var safe_dt = min(dt, 1.0 / 50.0)
 		_physics(safe_dt)
 		
 	_refresh_mesh()
