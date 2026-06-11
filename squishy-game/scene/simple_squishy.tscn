@@ -160,7 +160,7 @@ spring_intensity = 20.0
 distance_threshold = 1.0
 
 [node name="Spring2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -12.1447, -4.14283)
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -11.9267, -4.14283)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("7_4onsn")
 spring_intensity = 20.0
