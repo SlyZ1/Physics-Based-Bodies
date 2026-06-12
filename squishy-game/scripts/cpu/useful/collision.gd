@@ -83,6 +83,9 @@ static func intersect_nearest_triangles(collision_triangles: Array, global_cente
 		# Prevent registering two triangles from the exact same flat plane (e.g. edge hits)
 		if hit_1.pos != null and hit_1.normal.dot(tri.normal) > 0.99 and abs(dist - hit_1.dist) < 0.0001:
 			continue
+
+		if hit_2.pos != null and hit_2.normal.dot(tri.normal) > 0.99 and abs(dist - hit_2.dist) < 0.0001:
+			continue
 			
 		if dist < hit_1.dist:
 			hit_2.pos = hit_1.pos

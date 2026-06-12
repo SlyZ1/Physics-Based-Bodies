@@ -225,15 +225,19 @@ func _integrate(dt: float) -> void:
 		loc_acc[i] *= 0
 	glob_acc *= 0
 
-func _collide(dt: float) -> void:
+func _collide(dt: float, old_center: Vector3) -> void:
 	var global_squishy_distance = 0.0
+	old_center = MeshUtils.get_center(pos)
 	for i in range(N):
 		# no need to apply global_transform as scale is (1,1,1) and we are treating distances
-		var dist_sq: float = (pos_center - pos[i]).length_squared()
+		var dist_sq: float = (old_center - pos[i]).length_squared()
 		global_squishy_distance = max(global_squishy_distance, dist_sq)
 	global_squishy_distance = sqrt(global_squishy_distance)
+	var reduc: float = 0
+	global_squishy_distance *= 1 - reduc + reduc * clamp(1 - glob_vel.length() / max_velocity, 0, 1)
 
-	var collision_triangles = BoundingSphereTree.query_sphere(collision_BVH, get_real_center(), global_squishy_distance)
+	var collision_triangles = BoundingSphereTree.query_sphere(collision_BVH, global_transform * old_center, global_squishy_distance)
+	#print(collision_triangles.size())
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	var new_collision_dir: Vector3 = Vector3.ZERO
@@ -252,9 +256,10 @@ func _collide(dt: float) -> void:
 		if len(best_hits) == 2:
 			var snd_best_hit_normal = best_hits[1]["normal"]
 			var snd_best_hit_dist = best_hits[1]["dist"]
+			
 			best_hit_pos += snd_best_hit_normal * sqrt(snd_best_hit_dist)
 			best_hit_normal = snd_best_hit_normal * snd_best_hit_dist + best_hit_normal * best_hit_dist
-			best_hit_normal /= best_hit_dist + snd_best_hit_dist
+			best_hit_normal = best_hit_normal.normalized()
 
 		if best_hit_pos != null:
 			is_colliding = true
@@ -293,7 +298,9 @@ func _collide(dt: float) -> void:
 			# REBOUND
 			glob_vel -= hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N
 
-	if is_colliding && new_collision_dir.length() > 1e-8:
+
+	collision_dir /= N
+	if is_colliding && new_collision_dir.length() > 1e-2:
 		collision_dir = new_collision_dir.normalized()
 	else:
 		collision_dir = Vector3.UP
@@ -334,7 +341,7 @@ func _physics(dt: float) -> void:
 	_integrate(dt)
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
-	_collide(dt)
+	_collide(dt, old_center)
 	_recenter(old_center)
 	old_pos = pos.duplicate()
 	

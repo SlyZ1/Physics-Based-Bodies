@@ -47,7 +47,7 @@ albedo_color = Color(0.32, 0.354, 1, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
 albedo_color = Color(1, 1, 1, 0.517647)
 albedo_texture = ExtResource("1_ppqmt")
-uv1_scale = Vector3(10, 10, 10)
+uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wkq7k"]
 
@@ -78,7 +78,6 @@ gizmo1 = NodePath("../Gizmos/Gizmo1")
 gizmo2 = NodePath("../Gizmos/Gizmo2")
 energy_abs = 0.752
 squish_factor = 0.725
-max_velocity = 18.0
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")
@@ -147,19 +146,19 @@ sensibility = 0.001
 [node name="Colliding Objects" type="Node" parent="."]
 
 [node name="Ground" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.3, 0)
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, -0.3, 0)
 mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Ground2" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(9.65308, 2.61111, 1.14135e-07, 0, -4.37114e-07, 10, 2.61111, -9.65308, -4.2195e-07, -6.4984, -0.3, 2.74587)
+transform = Transform3D(9.63867, -2.6638, -1.16439e-07, 0, -4.37114e-07, 10, -2.6638, -9.63867, -4.2132e-07, -16.841, -0.3, 18.9114)
 mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Ground3" type="MeshInstance3D" parent="Colliding Objects"]
-transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -6.4984, -0.3, 2.09543)
+transform = Transform3D(-7.8277, 6.2231, 2.7202e-07, -9.28177e-15, -4.37114e-07, 10, 6.2231, 7.8277, 3.4216e-07, -17.172, -0.3, 18.3515)
 mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")

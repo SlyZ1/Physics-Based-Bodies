@@ -16,7 +16,7 @@ var coyotee_timer: float
 
 # BUFFER
 var buffer_counter: float
-var is_jumping: bool 
+var is_jumping: bool = false
 var up: Vector3
 
 func _process(dt: float) -> void:
@@ -45,8 +45,8 @@ func _process(dt: float) -> void:
 	if !is_jumping or !can_jump_coyotee or !can_jump:
 		return
 	can_jump = false
-	squishy.add_glob_acc(up * jump_force / dt)
 	squishy.add_glob_vel(-up * up.dot(squishy.glob_vel))
+	squishy.add_glob_vel(up * jump_force)
 	
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("jump"):
