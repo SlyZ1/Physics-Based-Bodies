@@ -7,6 +7,8 @@ static func _extract_collider_geometry(colliders_parent: Node) -> Array:
 	for child in colliders_parent.get_children():
 		var triangles: Array = []
 		if child is MeshInstance3D and child.mesh:
+			var rb: Rigidbody = null
+			if child is Rigidbody: rb = child
 			var faces = child.mesh.get_faces() 
 			var child_transform = child.global_transform
 			
@@ -18,7 +20,7 @@ static func _extract_collider_geometry(colliders_parent: Node) -> Array:
 				var normal = (v2 - v0).cross(v1 - v0).normalized()
 				
 				triangles.append({
-					"v0": v0, "v1": v1, "v2": v2, "normal": normal
+					"v0": v0, "v1": v1, "v2": v2, "normal": normal, "rb": rb
 				})
 		collision_object_triangles.append(triangles)
 	return collision_object_triangles
@@ -66,8 +68,8 @@ static func intersect_nearest_triangles(collision_triangles: Array, global_cente
 	var ray_vector: Vector3 = global_end - global_start 
 	var snd_ray_vector: Vector3 = global_end - global_center
 	
-	var hit_1 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
-	var hit_2 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
+	var hit_1 = {"pos": null, "normal": Vector3.ZERO, "dist": INF, "rb": null}
+	var hit_2 = {"pos": null, "normal": Vector3.ZERO, "dist": INF, "rb": null}
 
 	for tri in collision_triangles:
 		var hit_pos = MeshCollisions.ray_intersects_triangle(global_start, ray_vector, tri)
@@ -91,20 +93,23 @@ static func intersect_nearest_triangles(collision_triangles: Array, global_cente
 			hit_2.pos = hit_1.pos
 			hit_2.normal = hit_1.normal
 			hit_2.dist = hit_1.dist
+			hit_2.rb = hit_1.rb
 			
 			hit_1.pos = hit_along_normal
 			hit_1.normal = tri.normal
 			hit_1.dist = dist
+			hit_1.rb = tri.rb
 		elif dist < hit_2.dist:
 			hit_2.pos = hit_along_normal
 			hit_2.normal = tri.normal
 			hit_2.dist = dist
+			hit_2.rb = tri.rb
 
 	var results = []
 	if hit_1.pos != null:
-		results.append({"pos": hit_1.pos, "normal": hit_1.normal, "dist": hit_1.dist})
+		results.append({"pos": hit_1.pos, "normal": hit_1.normal, "dist": hit_1.dist, "rb": hit_1.rb})
 	if hit_2.pos != null:
-		results.append({"pos": hit_2.pos, "normal": hit_2.normal, "dist": hit_2.dist})
+		results.append({"pos": hit_2.pos, "normal": hit_2.normal, "dist": hit_2.dist, "rb": hit_2.rb})
 		
 	return results
 
