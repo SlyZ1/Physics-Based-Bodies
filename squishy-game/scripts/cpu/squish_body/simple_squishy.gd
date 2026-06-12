@@ -47,7 +47,7 @@ var is_colliding: bool
 var anchor_vel: Vector3
 var squeleton: Array[Node3D] = []
 var neighbours: Array
-var collision_triangles: Array = []
+var collision_BVH: BoundingSphereTree.SphereNode
 
 var bounce_force: Vector3
 static var core: Squishy
@@ -141,7 +141,7 @@ func _ready() -> void:
 		dup.position = global_transform * anchor_point_arr[i]
 		center_gizmo.get_parent().add_child(dup)
 		squeleton.append(dup)
-	collision_triangles = MeshCollisions.extract_collider_geometry(colliders_parent)
+	collision_BVH = MeshCollisions.create_collision_BVH_object(colliders_parent)
 	
 func _compute_glob_acc(dt: float) -> Vector3:
 	var gravity: Vector3 = g * Vector3.DOWN
@@ -222,6 +222,24 @@ func _integrate(dt: float) -> void:
 	glob_acc *= 0
 
 func _collide(dt: float) -> void:
+	var local_squishy_center = Vector3.ZERO
+	for i in range(N):
+		local_squishy_center += pos[i] / (2.0 * N)
+		local_squishy_center += old_pos[i] / (2.0 * N)
+	
+	var global_squishy_center = global_transform * local_squishy_center
+	
+	var global_squishy_distance = 0.0
+	for i in range(N):
+		var g_old_pos = global_transform * old_pos[i]
+		var g_pos = global_transform * pos[i]
+		
+		var dist = (global_squishy_center - g_old_pos).length()
+		dist = max(dist, (global_squishy_center - g_pos).length())
+		if dist > global_squishy_distance:
+			global_squishy_distance = dist
+
+	var collision_triangles = BoundingSphereTree.query_sphere(collision_BVH, global_squishy_center, global_squishy_distance)
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	var new_collision_dir: Vector3 = Vector3.ZERO

@@ -1,10 +1,11 @@
 class_name MeshCollisions
 extends Object
 
-static func extract_collider_geometry(colliders_parent: Node) -> Array:
-	var collision_triangles: Array
+static func _extract_collider_geometry(colliders_parent: Node) -> Array:
+	var collision_object_triangles: Array
 	
 	for child in colliders_parent.get_children():
+		var triangles: Array = []
 		if child is MeshInstance3D and child.mesh:
 			var faces = child.mesh.get_faces() 
 			var child_transform = child.global_transform
@@ -16,11 +17,14 @@ static func extract_collider_geometry(colliders_parent: Node) -> Array:
 				
 				var normal = (v2 - v0).cross(v1 - v0).normalized()
 				
-				collision_triangles.append({
+				triangles.append({
 					"v0": v0, "v1": v1, "v2": v2, "normal": normal
 				})
-	return collision_triangles
+		collision_object_triangles.append(triangles)
+	return collision_object_triangles
 
+static func create_collision_BVH_object(colliders_parent: Node) -> BoundingSphereTree.SphereNode:
+	return BoundingSphereTree.build_hierarchy(_extract_collider_geometry(colliders_parent))
 
 static func ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tri: Dictionary) -> Variant:
 	const EPSILON = 0.0000001
