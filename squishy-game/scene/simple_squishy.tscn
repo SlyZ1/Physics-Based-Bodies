@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=23 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -38,6 +38,10 @@ albedo_color = Color(1, 0.32, 0.32, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_sq561"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pr2b6"]
+no_depth_test = true
+albedo_color = Color(0.32, 0.354, 1, 1)
+
 [sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
@@ -64,24 +68,17 @@ omni_attenuation = -0.714
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
 
-[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("colliders_parent", "center_node", "center_gizmo", "squeleton_center_gizmo")]
+[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
 mesh = SubResource("SphereMesh_hjnoc")
 script = ExtResource("2_60v1p")
 colliders_parent = NodePath("../Colliding Objects")
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
-squeleton_center_gizmo = NodePath("../Gizmos/SqueletonCenterGizmo")
-g = null
-air_damping = null
-k = null
-m = null
-center_damping = null
-squeleton_damping = null
-horizontal_hardness = null
+gizmo1 = NodePath("../Gizmos/Gizmo1")
+gizmo2 = NodePath("../Gizmos/Gizmo2")
 energy_abs = 0.752
 squish_factor = 0.725
 max_velocity = 18.0
-smooth_factor = null
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")
@@ -117,7 +114,6 @@ move_squishy = NodePath("../Move")
 
 [node name="Gizmos" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
-visible = false
 
 [node name="CenterGizmo" type="MeshInstance3D" parent="Gizmos"]
 transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
@@ -125,9 +121,15 @@ material_override = SubResource("StandardMaterial3D_x0itu")
 mesh = SubResource("SphereMesh_sq561")
 skeleton = NodePath("../../Squish")
 
-[node name="SqueletonCenterGizmo" type="MeshInstance3D" parent="Gizmos"]
+[node name="Gizmo1" type="MeshInstance3D" parent="Gizmos"]
 transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_x0itu")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
+[node name="Gizmo2" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_pr2b6")
 mesh = SubResource("SphereMesh_sq561")
 skeleton = NodePath("../../Squish")
 

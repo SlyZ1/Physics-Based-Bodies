@@ -31,13 +31,15 @@ static func ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tr
 	var v0 = tri.v0
 	var v1 = tri.v1
 	var v2 = tri.v2
+	if ray_vector.dot(tri.normal) > EPSILON:
+		return null
 	
 	var edge1 = v1 - v0
 	var edge2 = v2 - v0
 	var h = ray_vector.cross(edge2)
 	var a = edge1.dot(h)
 	
-	if a > -EPSILON and a < EPSILON:
+	if a > -EPSILON:
 		return null
 		
 	var f = 1.0 / a
@@ -60,8 +62,9 @@ static func ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tr
 		
 	return null
 	
-static func intersect_nearest_triangles(collision_triangles: Array, global_start: Vector3, global_end: Vector3) -> Array:
+static func intersect_nearest_triangles(collision_triangles: Array, global_center: Vector3, global_start: Vector3, global_end: Vector3) -> Array:
 	var ray_vector: Vector3 = global_end - global_start 
+	var snd_ray_vector: Vector3 = global_end - global_center
 	
 	var hit_1 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
 	var hit_2 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
@@ -69,7 +72,9 @@ static func intersect_nearest_triangles(collision_triangles: Array, global_start
 	for tri in collision_triangles:
 		var hit_pos = MeshCollisions.ray_intersects_triangle(global_start, ray_vector, tri)
 		if hit_pos == null:
-			continue
+			hit_pos = MeshCollisions.ray_intersects_triangle(global_center, snd_ray_vector, tri)
+			if hit_pos == null:
+				continue
 			
 		# Project along the normal to have a relevant behaviour
 		var hit_along_normal = global_end - (global_end - hit_pos).dot(tri.normal) * tri.normal

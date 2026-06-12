@@ -71,8 +71,12 @@ static func query_sphere(node: SphereNode, target_center: Vector3, distance_thre
 
 				var tri_dist_sq = tri_center.distance_squared_to(target_center)
 				var tri_comb_radius = tri_radius + distance_threshold
+				var close_cond: bool = tri_dist_sq <= (tri_comb_radius * tri_comb_radius)
+
+				var dist_proj = (target_center - tri_center).dot(tri.normal)
+				var plane_cond: bool = dist_proj <= distance_threshold and dist_proj >= -distance_threshold
 				
-				if tri_dist_sq <= (tri_comb_radius * tri_comb_radius):
+				if close_cond and plane_cond:
 					results.append(tri)
 
 	return results
