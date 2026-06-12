@@ -59,7 +59,48 @@ static func ray_intersects_triangle(ray_origin: Vector3, ray_vector: Vector3, tr
 		return ray_origin + (ray_vector * t)
 		
 	return null
+	
+static func intersect_nearest_triangles(collision_triangles: Array, global_start: Vector3, global_end: Vector3) -> Array:
+	var ray_vector: Vector3 = global_end - global_start 
+	
+	var hit_1 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
+	var hit_2 = {"pos": null, "normal": Vector3.ZERO, "dist": INF}
 
+	for tri in collision_triangles:
+		var hit_pos = MeshCollisions.ray_intersects_triangle(global_start, ray_vector, tri)
+		if hit_pos == null:
+			continue
+			
+		# Project along the normal to have a relevant behaviour
+		var hit_along_normal = global_end - (global_end - hit_pos).dot(tri.normal) * tri.normal
+		var dist = global_start.distance_squared_to(hit_along_normal)
+		
+		# Prevent registering two triangles from the exact same flat plane (e.g. edge hits)
+		if hit_1.pos != null and hit_1.normal.dot(tri.normal) > 0.99 and abs(dist - hit_1.dist) < 0.0001:
+			continue
+			
+		if dist < hit_1.dist:
+			hit_2.pos = hit_1.pos
+			hit_2.normal = hit_1.normal
+			hit_2.dist = hit_1.dist
+			
+			hit_1.pos = hit_along_normal
+			hit_1.normal = tri.normal
+			hit_1.dist = dist
+		elif dist < hit_2.dist:
+			hit_2.pos = hit_along_normal
+			hit_2.normal = tri.normal
+			hit_2.dist = dist
+
+	var results = []
+	if hit_1.pos != null:
+		results.append({"pos": hit_1.pos, "normal": hit_1.normal, "dist": hit_1.dist})
+	if hit_2.pos != null:
+		results.append({"pos": hit_2.pos, "normal": hit_2.normal, "dist": hit_2.dist})
+		
+	return results
+
+# Old function, keep for consistency for now (Colin)
 static func intersect_nearest_triangle(collision_triangles: Array, global_start, global_end) -> Dictionary:
 	var ray_vector: Vector3 = global_end - global_start 
 	

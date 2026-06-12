@@ -17,6 +17,7 @@ var coyotee_timer: float
 # BUFFER
 var buffer_counter: float
 var is_jumping: bool 
+var up: Vector3
 
 func _process(dt: float) -> void:
 	dt = min(dt, 1.0 / 45.0)
@@ -25,7 +26,8 @@ func _process(dt: float) -> void:
 		jump_timer = 0
 	else: jump_timer += dt
 		
-	if squishy.is_colliding:
+	if squishy.is_colliding && squishy.mean_penetration > 1e-1:
+		up = squishy.mean_collision_normal
 		can_jump_coyotee = true
 		coyotee_timer = 0
 	else:
@@ -43,7 +45,6 @@ func _process(dt: float) -> void:
 	if !is_jumping or !can_jump_coyotee or !can_jump:
 		return
 	can_jump = false
-	var up: Vector3 = squishy.mean_collision_normal
 	squishy.add_glob_acc(up * jump_force / dt)
 	squishy.add_glob_vel(-up * up.dot(squishy.glob_vel))
 	

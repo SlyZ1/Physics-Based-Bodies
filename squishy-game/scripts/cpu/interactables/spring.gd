@@ -13,7 +13,7 @@ func interact(dt: float, squishy: Squishy) -> void:
 	var spring_dir: Vector3 = global_basis.y
 	spring_dir = squishy.global_transform.basis.transposed() * spring_dir
 	spring_dir = spring_dir.normalized()
-	squishy.add_glob_vel(- spring_dir * spring_dir.dot(squishy.glob_vel))
+	squishy.add_glob_vel(-squishy.glob_vel)
 	squishy.add_glob_vel(spring_dir * spring_intensity)
 
 func _process(delta: float) -> void:

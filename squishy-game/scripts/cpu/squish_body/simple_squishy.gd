@@ -41,6 +41,7 @@ var squeleton_center: Vector3
 
 var mean_collision_point: Vector3
 var mean_collision_normal: Vector3
+var mean_penetration: float
 var collision_dir: Vector3 = Vector3.UP
 var is_colliding: bool
 
@@ -214,7 +215,7 @@ func _integrate(dt: float) -> void:
 		pos[i] += loc_vel[i] * dt + anch_spring_vel[i] * dt
 		
 		# HORIZONTAL HARDNESS
-		pos[i] += (glob_vel - collision_dir * collision_dir.dot(glob_vel)) * horizontal_hardness * dt
+		pos[i] += (glob_vel - collision_dir * glob_vel.dot(collision_dir)) * 0.7 * dt
 		# RESTRAIN MAX SQUISH
 		pos[i] = pos_center + (pos[i] - pos_center).normalized() * max((pos[i] - pos_center).length(), radius / 2)
 		
@@ -224,8 +225,9 @@ func _integrate(dt: float) -> void:
 func _collide(dt: float) -> void:
 	var local_squishy_center = Vector3.ZERO
 	for i in range(N):
-		local_squishy_center += pos[i] / (2.0 * N)
-		local_squishy_center += old_pos[i] / (2.0 * N)
+		local_squishy_center += pos[i]
+		local_squishy_center += old_pos[i]
+	local_squishy_center /= 2.0 * N
 	
 	var global_squishy_center = global_transform * local_squishy_center
 	
@@ -238,6 +240,7 @@ func _collide(dt: float) -> void:
 		dist = max(dist, (global_squishy_center - g_pos).length())
 		if dist > global_squishy_distance:
 			global_squishy_distance = dist
+	global_squishy_distance += 0.5
 
 	var collision_triangles = BoundingSphereTree.query_sphere(collision_BVH, global_squishy_center, global_squishy_distance)
 	var inverse_transform = global_transform.inverse()
@@ -250,9 +253,19 @@ func _collide(dt: float) -> void:
 		var global_end: Vector3 = global_transform * pos[i]
 		
 		# FIND INTERSECTION
-		var best_hit = MeshCollisions.intersect_nearest_triangle(collision_triangles, global_start, global_end)
-		var best_hit_pos = best_hit["pos"]
-		var best_hit_normal = best_hit["normal"]
+		var best_hits = MeshCollisions.intersect_nearest_triangles(collision_triangles, global_start, global_end)
+		if len(best_hits) == 0:
+			continue
+		var best_hit_pos = best_hits[0]["pos"]
+		var best_hit_normal = best_hits[0]["normal"]
+		var best_hit_dist = best_hits[0]["dist"]
+		if len(best_hits) == 2:
+			var snd_best_hit_pos = best_hits[1]["pos"]
+			var snd_best_hit_normal = best_hits[1]["normal"]
+			var snd_best_hit_dist = best_hits[1]["dist"]
+			best_hit_pos += snd_best_hit_normal * sqrt(snd_best_hit_dist)
+			best_hit_normal = snd_best_hit_normal * snd_best_hit_dist + best_hit_normal * best_hit_dist
+			best_hit_normal /= best_hit_dist + snd_best_hit_dist
 
 		if best_hit_pos != null:
 			is_colliding = true
@@ -270,9 +283,8 @@ func _collide(dt: float) -> void:
 			# ACCUMULATE COLLISION INFORMATIONS
 			mean_collision_point += pos[i]
 			mean_collision_normal += hit_local_normal
-			if hit_local_normal.dot(Vector3.UP) > 0:
-				var test = (squeleton_center - anchor_point_arr[i]).normalized()
-				new_collision_dir += test
+			if abs(hit_local_normal.dot(Vector3.UP)) > 0.5:
+				new_collision_dir += (squeleton_center - anchor_point_arr[i]).normalized()
 			
 			# SQUELETON SPRING REPULSION
 			var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
@@ -286,7 +298,7 @@ func _collide(dt: float) -> void:
 			
 			# REBOUND PARAMETERS
 			var dot_prod: float = hit_local_normal.dot(anchor_spring + center_spring)
-			var hardness: float = horizontal_hardness if hit_local_normal.dot(Vector3.UP) < 0.1 else 0
+			var hardness: float = horizontal_hardness if abs(hit_local_normal.dot(Vector3.UP)) < 0.5 else 0
 			var hardness_factor: float = 1 + 7 * pow(hardness, 2)
 			var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
 			
@@ -295,9 +307,13 @@ func _collide(dt: float) -> void:
 
 	if is_colliding && new_collision_dir.length() > 1e-8: 
 		collision_dir = new_collision_dir.normalized()
-	if is_colliding && mean_collision_normal.length() > 1e-5:
+	else:
+		collision_dir = Vector3.UP
+	mean_collision_normal /= N
+	mean_penetration =  mean_collision_normal.length()
+	if is_colliding && mean_collision_normal.length() > 1e-2:
 		mean_collision_normal = mean_collision_normal.normalized()
-	else: mean_collision_normal = collision_dir
+	else: mean_collision_normal = Vector3.UP
 
 func _recenter(dt: float, old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
@@ -310,7 +326,7 @@ func _recenter(dt: float, old_pos_center) -> void:
 
 func _handle_gizmos() -> void:
 	if center_gizmo.get_parent_node_3d().visible: 
-		squeleton_center_gizmo.global_position = global_transform * squeleton_center
+		squeleton_center_gizmo.global_position = global_transform * (pos_center + mean_collision_normal)
 		center_gizmo.global_position = global_transform * pos_center
 		for i in range(N):
 			squeleton[i].global_position = global_transform * anchor_point_arr[i]

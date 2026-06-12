@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=22 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -45,6 +45,8 @@ albedo_color = Color(1, 1, 1, 0.517647)
 albedo_texture = ExtResource("1_ppqmt")
 uv1_scale = Vector3(10, 10, 10)
 
+[sub_resource type="BoxMesh" id="BoxMesh_wkq7k"]
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
 
 [node name="SimpleSquishy" type="Node3D"]
@@ -69,9 +71,17 @@ colliders_parent = NodePath("../Colliding Objects")
 center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
 squeleton_center_gizmo = NodePath("../Gizmos/SqueletonCenterGizmo")
-energy_abs = 0.692
-squish_factor = 0.737
+g = null
+air_damping = null
+k = null
+m = null
+center_damping = null
+squeleton_damping = null
+horizontal_hardness = null
+energy_abs = 0.752
+squish_factor = 0.725
 max_velocity = 18.0
+smooth_factor = null
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
 script = ExtResource("3_31lwa")
@@ -152,6 +162,30 @@ mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
+[node name="Ground4" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(-10, -8.74228e-07, 0, 8.74227e-07, -10, 0, 0, 0, 10, -6.03444, 10.3239, -36.696)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, -2.49787, -13.5566)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube2" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, 0.0621111, -20.0217)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube3" type="MeshInstance3D" parent="Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, 3.0618, -26.8829)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
 [node name="Spring" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -17.4276, -4.14283)
 mesh = SubResource("CylinderMesh_u24r5")
@@ -168,6 +202,20 @@ distance_threshold = 1.0
 
 [node name="Spring3" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.0714436, 0.699701, 0, -0.0699701, 0.714436, 0, -7.81678, -4.14283)
+mesh = SubResource("CylinderMesh_u24r5")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, -7.81678, -23.4045)
+mesh = SubResource("CylinderMesh_u24r5")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, -2.55226, -16.8547)
 mesh = SubResource("CylinderMesh_u24r5")
 script = ExtResource("7_4onsn")
 spring_intensity = 20.0
