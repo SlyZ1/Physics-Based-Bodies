@@ -315,10 +315,10 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				
 				# Cancel force if rigidbody is locked in that direction
 				var mcd = best_hit_rb.mean_collision_dir
-				impact_force = impact_force - mcd * min(mcd.dot(impact_force), 0)
+				#impact_force = impact_force - mcd * min(mcd.dot(impact_force), 0)
 				
 				# Apply impact
-				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force)
+				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force, true)
 
 
 	collision_dir /= N

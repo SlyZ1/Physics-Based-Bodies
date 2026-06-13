@@ -212,7 +212,6 @@ script = ExtResource("11_ukla3")
 ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
 gizmo = NodePath("../../Gizmos/RigidbodyGizmo")
 g = 20.0
-m = 10.0
 energy_absorption = 0.449
 linear_damping = 1.0
 angular_damping = 1.0
