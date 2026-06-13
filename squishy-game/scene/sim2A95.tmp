@@ -1,0 +1,271 @@
+[gd_scene load_steps=26 format=3 uid="uid://dmlk2t80my8an"]
+
+[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="3_31lwa"]
+[ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/eye.gd" id="5_jqas6"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_l32nw"]
+[ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
+[ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
+[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="11_ukla3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
+sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
+sky_horizon_color = Color(0.378, 0.5936, 0.84, 1)
+ground_bottom_color = Color(0.2706, 0.481203, 0.82, 1)
+ground_horizon_color = Color(0.376471, 0.592157, 0.839216, 1)
+ground_curve = 0.251068
+sun_curve = 0.160766
+
+[sub_resource type="Sky" id="Sky_4rfvc"]
+sky_material = SubResource("ProceduralSkyMaterial_vyorq")
+
+[sub_resource type="Environment" id="Environment_c8ed3"]
+background_mode = 2
+sky = SubResource("Sky_4rfvc")
+
+[sub_resource type="SphereMesh" id="SphereMesh_hjnoc"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_xaxyj"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uwtkc"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0itu"]
+no_depth_test = true
+albedo_color = Color(1, 0.32, 0.32, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_sq561"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pr2b6"]
+no_depth_test = true
+albedo_color = Color(0.32, 0.354, 1, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
+albedo_color = Color(1, 1, 1, 0.517647)
+albedo_texture = ExtResource("1_ppqmt")
+uv1_scale = Vector3(20, 20, 20)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wkq7k"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lg146"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
+
+[node name="SimpleSquishy" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
+shadow_enabled = true
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.933, -7.75748, -13.2724)
+omni_range = 24.2788
+omni_attenuation = -0.714
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_c8ed3")
+
+[node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("static_colliders_parent", "dynamic_colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
+mesh = SubResource("SphereMesh_hjnoc")
+script = ExtResource("2_60v1p")
+static_colliders_parent = NodePath("../Static Colliding Objects")
+dynamic_colliders_parent = NodePath("../Dynamic Colliding Objects")
+center_node = NodePath("Center")
+center_gizmo = NodePath("../Gizmos/CenterGizmo")
+gizmo1 = NodePath("../Gizmos/Gizmo1")
+gizmo2 = NodePath("../Gizmos/Gizmo2")
+energy_abs = 0.752
+squish_factor = 0.725
+
+[node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
+script = ExtResource("3_31lwa")
+squishy = NodePath("..")
+cam_container = NodePath("../../CameraContainer")
+ground_force = 40.0
+air_force = 15.0
+ground_friction = 4.5
+air_friction = 0.75
+
+[node name="Jump" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+script = ExtResource("4_yyrdy")
+squishy = NodePath("..")
+jump_force = 15.0
+coyotee_time = 0.03
+jump_buffer_time = 0.1
+
+[node name="Deform" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
+script = ExtResource("4_80gtl")
+squishy = NodePath("..")
+cam_container = NodePath("../../CameraContainer")
+
+[node name="Fall" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+script = ExtResource("5_l32nw")
+squishy = NodePath("..")
+min_height = -10.0
+
+[node name="Eye" type="MeshInstance3D" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
+transform = Transform3D(0.245, 0, 0, 0, 0.245, 0, 0, 0, 0.245, 0, 0, 0.549312)
+visible = false
+mesh = SubResource("SphereMesh_xaxyj")
+surface_material_override/0 = SubResource("StandardMaterial3D_uwtkc")
+script = ExtResource("5_jqas6")
+squishy = NodePath("..")
+move_squishy = NodePath("../Move")
+
+[node name="Center" type="Node3D" parent="Squish"]
+
+[node name="Gizmos" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
+
+[node name="CenterGizmo" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_x0itu")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
+[node name="RigidbodyGizmo" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_x0itu")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
+[node name="Gizmo1" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_x0itu")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
+[node name="Gizmo2" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_pr2b6")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
+[node name="CameraContainer" type="Node3D" parent="." node_paths=PackedStringArray("target", "camera")]
+transform = Transform3D(-0.245, 7.57092e-09, -2.00358e-08, 0, 0.229183, 0.0866012, 2.14186e-08, 0.0866012, -0.229183, 0, 0.262103, 1.62728)
+script = ExtResource("4_8bwax")
+target = NodePath("../Squish/Center")
+camera = NodePath("Camera3D")
+target_damp = 5.0
+distance = 20.0
+sensibility = 0.001
+
+[node name="Camera3D" type="Camera3D" parent="CameraContainer"]
+
+[node name="Static Colliding Objects" type="Node" parent="."]
+
+[node name="Ground" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, -0.3, 0)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Ground2" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(9.63867, -2.6638, -1.16439e-07, 0, -4.37114e-07, 10, -2.6638, -9.63867, -4.2132e-07, -16.841, -0.3, 18.9114)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Ground3" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-7.8277, 6.2231, 2.7202e-07, -9.28177e-15, -4.37114e-07, 10, 6.2231, 7.8277, 3.4216e-07, -17.172, -0.3, 18.3515)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Ground4" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-10, -8.74228e-07, 0, 8.74227e-07, -10, 0, 0, 0, 10, -6.03444, 10.3239, -36.696)
+mesh = SubResource("PlaneMesh_nkany")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, -2.49787, -13.5566)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube2" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, 0.0621111, -20.0217)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Cube3" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, 3.0618, -26.8829)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
+
+[node name="Dynamic Colliding Objects" type="Node" parent="."]
+
+[node name="Rigidbody" type="MeshInstance3D" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes", "gizmo")]
+transform = Transform3D(1, 0, 0, 0, 4.5475, 0, 0, 0, 4.37637, 3.77546, 2.18989, 13.3614)
+mesh = SubResource("BoxMesh_lg146")
+script = ExtResource("11_ukla3")
+ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
+gizmo = NodePath("../../Gizmos/RigidbodyGizmo")
+g = 20.0
+energy_absorption = 0.449
+linear_damping = 1.0
+angular_damping = 1.0
+friction_factor = 0.5
+velocity_thresh = 0.1
+angular_velocity_thresh = 0.4
+sleep_delay = 0.7
+
+[node name="Interactables" type="Node" parent="."]
+
+[node name="Spring" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -0.2805, -4.14283)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring2" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, 5.0024, -4.14283)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring3" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.0714436, 0.699701, 0, -0.0699701, 0.714436, 0, 9.33032, -4.14283)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring4" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, 9.33032, -23.4045)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Spring5" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, 14.5948, -16.8547)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("7_4onsn")
+spring_intensity = 20.0
+distance_threshold = 1.0
+
+[node name="Booster" type="MeshInstance3D" parent="Interactables"]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -0.2805, -6.87251)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("8_wnw85")
+boost_intensity = 40.0
+distance_threshold = 1.0

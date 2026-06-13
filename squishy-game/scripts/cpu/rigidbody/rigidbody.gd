@@ -25,7 +25,6 @@ class_name Rigidbody
 @export var sleep_delay: float = 0.5
 
 var vertices: PackedVector3Array
-var vertices_constraints: Array[Vector3]
 var N: int
 var initial_pos: Vector3
 
@@ -53,7 +52,7 @@ func add_angular_vel(vel: Vector3) -> void:
 func add_angular_acc(acc: Vector3) -> void:
 	glob_angular_acc += acc
 
-func add_impact(origin: Vector3, force: Vector3, check_contraints: bool) -> void:
+func add_impact(origin: Vector3, force: Vector3) -> void:
 	if force.length() < 1e-8: return
 	is_sleeping = false
 	var r: Vector3 = origin - global_transform.origin
@@ -64,14 +63,6 @@ func add_impact(origin: Vector3, force: Vector3, check_contraints: bool) -> void
 	var impact_ang_vel: Vector3 = inverse_inertia_tensor * r.cross(j)
 	glob_vel += impact_vel
 	glob_angular_vel += impact_ang_vel
-	if !check_contraints: return
-	for i in range(N):
-		var constraint = vertices_constraints[i]
-		if constraint.length_squared() < 1e-5: continue
-		var loc_pos = global_transform * vertices[i]
-		var rv = loc_pos - global_transform.origin
-		var p_vel = impact_vel + impact_ang_vel.cross(rv)
-		add_impact(loc_pos, -constraint * constraint.dot(p_vel) * 0.3, false)
 
 func add_force(origin: Vector3, force: Vector3) -> void:
 	if force.length() < 1e-8: return
@@ -103,7 +94,6 @@ func _ready() -> void:
 	vertices = MeshUtils.get_vertices(mesh)
 	N = vertices.size()
 	was_colliding.resize(N)
-	vertices_constraints.resize(N)
 	initial_pos = global_position
 
 func _compute_inverse_inertia_tensor() -> Basis:
@@ -143,11 +133,7 @@ func _integrate(dt: float) -> void:
 
 	inverse_inertia_tensor = _compute_inverse_inertia_tensor()
 
-var mean_collision_dir: Vector3
 func _collide(dt) -> void:
-	var new_mcd: Vector3
-	vertices_constraints = []
-	vertices_constraints.resize(N)
 	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
 	restrict_lin = Vector3.ONE - restrict_lin
 	for ground_node in ground_nodes:
@@ -164,7 +150,6 @@ func _collide(dt) -> void:
 
 			if penetration >= 0:
 				is_colliding = true
-				vertices_constraints[i] = (vertices_constraints[i] + ground_up).normalized()
 
 				var d_vel: float = ground_up.dot(p_vel)
 
@@ -181,30 +166,19 @@ func _collide(dt) -> void:
 					var v2: float = d_vel + beta/(m * gamma) * penetration
 					v2 /= 1 + dt / (m * gamma)
 					var delta_v = (v2 - d_vel) * ground_up
-					add_impact(pos, delta_v, false)
+					add_impact(pos, delta_v)
 					if !was_colliding[i]:
-						add_impact(pos, friction_force, false)
+						add_impact(pos, friction_force)
 					else:
 						add_force(pos, friction_force * dt)
-					new_mcd += delta_v
-					#print("i: ", i, " d_vel: ", d_vel, " penetration: ", penetration, " v2: ", v2)
 
 				if d_vel < -0.01:
 					if !was_colliding[i]:
 						var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
-						add_impact(pos, collision_force, false)
+						add_impact(pos, collision_force)
 					was_colliding[i] = true
 				else:
 					was_colliding[i] = false
-			else:
-				new_mcd += p_vel
-	new_mcd /= N
-	if new_mcd.length() <= 0.01 || !is_colliding:
-		new_mcd = Vector3.ZERO
-	else: 
-		new_mcd = new_mcd.normalized()
-	mean_collision_dir = new_mcd
-	gizmo.global_position = global_position + mean_collision_dir
 
 var sleep_timer: float
 func _sleep_check(dt: float) -> void:
