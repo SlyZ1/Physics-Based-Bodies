@@ -90,11 +90,6 @@ func _start_simulation() -> void:
 
 func _ready() -> void:
 	vertices = MeshUtils.get_vertices(mesh)
-	var new_vertices: Array[Vector3] = []
-	#for v in vertices:
-		#if not new_vertices.has(v):
-			#new_vertices.append(v)
-	#vertices = new_vertices
 	N = vertices.size()
 	was_colliding.resize(N)
 	initial_pos = global_position
