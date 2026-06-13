@@ -3,6 +3,7 @@ class_name Rigidbody
 
 @export_group("Scene")
 @export var ground_nodes: Array[Node3D]
+@export var gizmo: Node3D
 @export_group("Physics")
 @export_subgroup("Global")
 @export var g: float = 9.8
@@ -35,6 +36,7 @@ var glob_angular_vel: Vector3
 
 var inverse_inertia_tensor: Basis
 
+var was_colliding: Array[bool]
 var is_colliding: bool
 var is_sleeping: bool
 
@@ -67,6 +69,12 @@ func add_force(origin: Vector3, force: Vector3) -> void:
 	glob_angular_acc += inverse_inertia_tensor * r.cross(force)
 	is_sleeping = false
 
+func get_loc_vel(origin: Vector3) -> Vector3:
+	var r: Vector3 = origin - global_transform.origin
+	var p_angular_vel: Vector3 = glob_angular_vel.cross(r)
+	var p_vel: Vector3 = glob_vel + p_angular_vel
+	return p_vel
+
 func _start_simulation() -> void:
 	glob_acc *= 0
 	glob_vel *= 0
@@ -82,7 +90,13 @@ func _start_simulation() -> void:
 
 func _ready() -> void:
 	vertices = MeshUtils.get_vertices(mesh)
+	var new_vertices: Array[Vector3] = []
+	#for v in vertices:
+		#if not new_vertices.has(v):
+			#new_vertices.append(v)
+	#vertices = new_vertices
 	N = vertices.size()
+	was_colliding.resize(N)
 	initial_pos = global_position
 
 func _compute_inverse_inertia_tensor() -> Basis:
@@ -122,7 +136,9 @@ func _integrate(dt: float) -> void:
 
 	inverse_inertia_tensor = _compute_inverse_inertia_tensor()
 
-func _collide() -> void:
+var mean_collision_dir: Vector3
+func _collide(dt) -> void:
+	var new_mcd: Vector3
 	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
 	restrict_lin = Vector3.ONE - restrict_lin
 	for ground_node in ground_nodes:
@@ -134,26 +150,51 @@ func _collide() -> void:
 			var v_pos: float = pos.dot(ground_up)
 			var r: Vector3 = pos - global_transform.origin
 			var penetration: float = ground_pos - v_pos
+			var p_angular_vel: Vector3 = glob_angular_vel.cross(r)
+			var p_vel: Vector3 = glob_vel + p_angular_vel
 
 			if penetration >= 0:
 				is_colliding = true
 
-				var p_angular_vel: Vector3 = glob_angular_vel.cross(r)
-				var p_vel: Vector3 = glob_vel + p_angular_vel
 				var d_vel: float = ground_up.dot(p_vel)
 
 				var slop: float = 0.001
 				var tangent_vel: Vector3 = p_vel - ground_up * d_vel
 				var friction_force: Vector3 = -friction_factor * tangent_vel
 				if penetration > slop:
-					var correction = ground_up * (ground_pos - v_pos) * 0.3
-					global_position += correction * restrict_lin
-
-					add_impact(pos, friction_force)
+					var k: float = 1e6 * m
+					var d: float = 2 * sqrt(k * m)
+					
+					var gamma = 1 / (d + dt * k)
+					var beta = dt * k * gamma
+					
+					var v2: float = d_vel + beta/(m * gamma) * penetration
+					v2 /= 1 + dt / (m * gamma)
+					var delta_v = (v2 - d_vel) * ground_up
+					add_impact(pos, delta_v)
+					if !was_colliding[i]:
+						add_impact(pos, friction_force)
+					else:
+						add_force(pos, friction_force * dt)
+					new_mcd += delta_v
+					#print("i: ", i, " d_vel: ", d_vel, " penetration: ", penetration, " v2: ", v2)
 
 				if d_vel < -0.01:
-					var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
-					add_impact(pos, collision_force)
+					if !was_colliding[i]:
+						var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
+						add_impact(pos, collision_force)
+					was_colliding[i] = true
+				else:
+					was_colliding[i] = false
+			else:
+				new_mcd += p_vel
+	new_mcd /= N
+	if new_mcd.length() <= 0.01 || !is_colliding:
+		new_mcd = Vector3.ZERO
+	else: 
+		new_mcd = new_mcd.normalized()
+	mean_collision_dir = new_mcd
+	gizmo.global_position = global_position + mean_collision_dir
 
 var sleep_timer: float
 func _sleep_check(dt: float) -> void:
@@ -169,5 +210,5 @@ func _process(dt: float) -> void:
 
 	if is_sleeping: return
 	_integrate(dt)
-	_collide()
+	_collide(dt)
 	_sleep_check(dt)

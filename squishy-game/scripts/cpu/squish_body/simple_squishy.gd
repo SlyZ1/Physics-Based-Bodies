@@ -237,7 +237,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 		# no need to apply global_transform as scale is (1,1,1) and we are treating distances
 		var dist_sq: float = (old_center - pos[i]).length_squared()
 		global_squishy_distance = max(global_squishy_distance, dist_sq)
-	global_squishy_distance = sqrt(global_squishy_distance)
+	global_squishy_distance = sqrt(global_squishy_distance) * 3
 	
 	var static_collision_triangles = BoundingSphereTree.query_sphere(static_collision_BVH, g_old_center, global_squishy_distance)
 	var dynamic_collision_triangles = BoundingSphereTree.query_sphere(dynamic_collision_BVH, g_old_center, global_squishy_distance)
@@ -302,9 +302,23 @@ func _collide(dt: float, old_center: Vector3) -> void:
 			var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
 			
 			# REBOUND
-			glob_vel -= hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N
+			var rebound_force = hit_local_normal * hardness_factor * min(dot_prod, 0) * energy_abs_factor * dt / N
+			glob_vel -= rebound_force
 			if best_hit_rb != null:
-				best_hit_rb.add_impact(pos[i], hardness_factor * hit_local_normal * min(dot_prod, 0) * energy_abs_factor * dt / N * 10)
+				# Prevent from traversing through the rigidbody
+				var p_vel: Vector3 = best_hit_rb.get_loc_vel(global_transform * pos[i])
+				pos[i] += hit_local_normal * max(p_vel.dot(hit_local_normal) * dt, 0)
+				
+				# Compute impact force
+				var d_vel = rebound_force / dt
+				var impact_force = d_vel * m / best_hit_rb.m
+				
+				# Cancel force if rigidbody is locked in that direction
+				var mcd = best_hit_rb.mean_collision_dir
+				impact_force = impact_force - mcd * min(mcd.dot(impact_force), 0)
+				
+				# Apply impact
+				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force)
 
 
 	collision_dir /= N
@@ -341,7 +355,7 @@ func _handle_fps() -> void:
 	mean_fps += Engine.get_frames_per_second()
 	iteration += 1
 	if iteration == 20:
-		print("fps : ", mean_fps / 20)
+		#print("fps : ", mean_fps / 20)
 		mean_fps = 0
 		iteration = 0
 

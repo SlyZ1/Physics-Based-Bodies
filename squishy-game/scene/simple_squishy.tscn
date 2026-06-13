@@ -130,6 +130,12 @@ material_override = SubResource("StandardMaterial3D_x0itu")
 mesh = SubResource("SphereMesh_sq561")
 skeleton = NodePath("../../Squish")
 
+[node name="RigidbodyGizmo" type="MeshInstance3D" parent="Gizmos"]
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_x0itu")
+mesh = SubResource("SphereMesh_sq561")
+skeleton = NodePath("../../Squish")
+
 [node name="Gizmo1" type="MeshInstance3D" parent="Gizmos"]
 transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_x0itu")
@@ -143,7 +149,7 @@ mesh = SubResource("SphereMesh_sq561")
 skeleton = NodePath("../../Squish")
 
 [node name="CameraContainer" type="Node3D" parent="." node_paths=PackedStringArray("target", "camera")]
-transform = Transform3D(0.245, 0, 0, 0, 0.229209, 0.0865333, 0, -0.0865333, 0.229209, 0, 0.262103, 1.62728)
+transform = Transform3D(-0.245, 7.57092e-09, -2.00358e-08, 0, 0.229183, 0.0866012, 2.14186e-08, 0.0866012, -0.229183, 0, 0.262103, 1.62728)
 script = ExtResource("4_8bwax")
 target = NodePath("../Squish/Center")
 camera = NodePath("Camera3D")
@@ -199,16 +205,18 @@ surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
-[node name="Rigidbody" type="MeshInstance3D" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes")]
+[node name="Rigidbody" type="MeshInstance3D" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes", "gizmo")]
 transform = Transform3D(1, 0, 0, 0, 4.5475, 0, 0, 0, 4.37637, 3.77546, 2.18989, 13.3614)
 mesh = SubResource("BoxMesh_lg146")
 script = ExtResource("11_ukla3")
 ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
+gizmo = NodePath("../../Gizmos/RigidbodyGizmo")
 g = 20.0
-energy_absorption = 0.802
+m = 10.0
+energy_absorption = 0.449
 linear_damping = 1.0
 angular_damping = 1.0
-friction_factor = 0.1
+friction_factor = 0.5
 velocity_thresh = 0.1
 angular_velocity_thresh = 0.4
 sleep_delay = 0.7
