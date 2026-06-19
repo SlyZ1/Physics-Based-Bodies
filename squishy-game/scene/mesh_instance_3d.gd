@@ -9,5 +9,5 @@ func _physics_process(dt: float) -> void:
 	var axis := local_axis.normalized()
 	if axis.length_squared() < 1e-8:
 		return
-	
+
 	rotate_object_local(axis, angular_speed * dt)

@@ -22,6 +22,6 @@ func _physics_process(dt: float) -> void:
 	velocity += Vector3.DOWN * gravity * dt
 	global_position += velocity * dt
 	age += dt
-	
+
 	if age >= lifetime:
 		queue_free()

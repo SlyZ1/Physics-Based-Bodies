@@ -23,18 +23,18 @@ func _ready() -> void:
 
 func _physics_process(dt: float) -> void:
 	shoot_timer -= dt
-	
+
 	if shoot_timer <= 0.0:
 		shoot()
 
 func shoot() -> void:
 	if barrel == null:
 		return
-	
+
 	var ball_scene := cannonball_scene
 	if ball_scene == null:
 		ball_scene = DEFAULT_CANNONBALL_SCENE
-	
+
 	var direction := (barrel.global_basis * _get_launch_axis()).normalized()
 	var ball := ball_scene.instantiate() as Node3D
 	var dynamic_colliders: Node = null
@@ -47,12 +47,12 @@ func shoot() -> void:
 	else:
 		get_tree().current_scene.add_child(ball)
 	ball.global_position = barrel.global_position + direction * muzzle_offset
-	
+
 	if ball.has_method("launch"):
 		ball.launch(direction * initial_speed)
 	if "gravity" in ball:
 		ball.gravity = gravity
-	
+
 	shoot_timer = shoot_interval
 
 func _get_launch_axis() -> Vector3:
