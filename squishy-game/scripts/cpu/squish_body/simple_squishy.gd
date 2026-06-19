@@ -13,6 +13,7 @@ extends MeshInstance3D
 @export_subgroup("Global")
 @export var g: float = 20
 @export var air_damping: float = 0.01
+@export_range(0.0, 2.0) var moving_body_momentum_transfer: float = 0.9
 @export_subgroup("Springs")
 @export var k: float = 50
 @export var m: float = 0.2
@@ -96,14 +97,23 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	if reset_vel_acc:
 		glob_acc *= 0
 		glob_vel *= 0
+		anchor_vel = Vector3.ZERO
 	for i in range(N):
 		anchor_point_arr[i] -= squeleton_center - new_pos
 		if reset_vel_acc:
 			loc_acc[i] *= 0
 			loc_vel[i] *= 0
+			anch_spring_acc[i] *= 0
+			anch_spring_vel[i] *= 0
 	pos = anchor_point_arr.duplicate()
+	old_pos = pos.duplicate()
 	squeleton_center = new_pos
 	pos_center = new_pos
+	mean_collision_point = Vector3.ZERO
+	mean_collision_normal = Vector3.UP
+	mean_penetration = 0.0
+	collision_dir = Vector3.UP
+	is_colliding = false
 	
 func get_local_basis(up_vec: Vector3) -> Basis:
 	var up: Vector3 = Vector3.UP if up_vec.length() < 1e-8 else up_vec
@@ -246,13 +256,20 @@ func _collide(dt: float, old_center: Vector3) -> void:
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	var new_collision_dir: Vector3 = Vector3.ZERO
+	var moving_body_pushes: Dictionary = {}
 	
 	for i in range(N):
 		var global_start: Vector3 = global_transform * old_pos[i]
 		var global_end: Vector3 = global_transform * pos[i]
 		
 		# FIND INTERSECTION
-		var best_hits = MeshCollisions.intersect_nearest_triangles(collision_triangles, get_real_center(), global_start, global_end)
+		var best_hits = MeshCollisions.intersect_nearest_triangles(
+			collision_triangles,
+			get_real_center(),
+			global_start,
+			global_end,
+			dt
+		)
 		if len(best_hits) == 0:
 			continue
 		var best_hit_pos = best_hits[0]["pos"]
@@ -272,10 +289,28 @@ func _collide(dt: float, old_center: Vector3) -> void:
 			
 			var hit_local_pos: Vector3 = inverse_transform * best_hit_pos
 			var hit_local_normal: Vector3 = (global_transform.basis.transposed() * best_hit_normal).normalized()
+			var collider_velocity := Vector3.ZERO
+			var collider_body: Node = best_hits[0].get("body")
+			if collider_body != null and collider_body.has_method("get_collision_velocity_at_global_point"):
+				var global_collider_velocity: Vector3 = collider_body.get_collision_velocity_at_global_point(best_hit_pos)
+				collider_velocity = global_transform.basis.transposed() * global_collider_velocity
+
+				# Collect one averaged global-body impulse per moving collider.
+				# Applying it once after all vertex contacts avoids multiplying the
+				# launch force by the number of vertices touching the same object.
+				var incoming_speed := hit_local_normal.dot(collider_velocity - glob_vel)
+				if incoming_speed > 0.0:
+					var push_data: Dictionary = moving_body_pushes.get(
+						collider_body,
+						{"sum": Vector3.ZERO, "count": 0}
+					)
+					push_data.sum += hit_local_normal * incoming_speed
+					push_data.count += 1
+					moving_body_pushes[collider_body] = push_data
 			
 			# DEPENETRATE
 			pos[i] = hit_local_pos + (hit_local_normal * 1e-3)
-			var normal_velocity: float = hit_local_normal.dot(loc_vel[i])
+			var normal_velocity: float = hit_local_normal.dot(loc_vel[i] - collider_velocity)
 			if normal_velocity < 0:
 				loc_vel[i] -= (2 - energy_abs) * hit_local_normal * normal_velocity
 			
@@ -316,6 +351,16 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				# Apply impact
 				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force)
 
+	for collider_body: Node in moving_body_pushes:
+		var push_data: Dictionary = moving_body_pushes[collider_body]
+		var momentum_factor := 1.0
+		if collider_body.has_method("get_collision_momentum_factor"):
+			momentum_factor = collider_body.get_collision_momentum_factor()
+		glob_vel += (
+			push_data.sum / float(push_data.count)
+			* moving_body_momentum_transfer
+			* momentum_factor
+		)
 
 	collision_dir /= N
 	if is_colliding && new_collision_dir.length() > 1e-2:

@@ -9,13 +9,11 @@ var vert_flatten = false
 
 var vert_flatten_dir: Vector3 = Vector3.RIGHT
 
-var vertices : PackedVector3Array
 var N : int
 
 func _ready() -> void :
 	await squishy.ready
-	vertices = squishy.get_pos()
-	N = vertices.size()
+	N = squishy.get_pos().size()
 
 func flatten_field(normal: Vector3, axis: Vector3) -> Vector3:
 	var n = normal.normalized()
@@ -36,6 +34,7 @@ func flatten_field(normal: Vector3, axis: Vector3) -> Vector3:
 	return to_center * pole + radial * equator
 
 func _process(dt: float) -> void:		
+	var vertices := squishy.get_pos()
 	for i in range(N):
 		var v = (vertices[i] - squishy.get_local_real_center()).normalized()
 
