@@ -1,0 +1,28 @@
+[gd_resource type="ShaderMaterial" load_steps=7 format=3 uid="uid://dophmcfbwoxfb"]
+
+[ext_resource type="Shader" path="res://scripts/gpu/grass.gdshader" id="1_0m1jo"]
+[ext_resource type="Texture2D" uid="uid://daowvuhapa6dl" path="res://assets/models/grass_tex.jpg" id="2_kc3hw"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_bfroh"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pier8"]
+noise = SubResource("FastNoiseLite_bfroh")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_613dv"]
+noise_type = 0
+fractal_octaves = 1
+fractal_lacunarity = 1.0
+fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_dlx8c"]
+noise = SubResource("FastNoiseLite_613dv")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_0m1jo")
+shader_parameter/color = Color(0.247, 0.52, 0.156, 1)
+shader_parameter/color2 = Color(0.37525, 0.79, 0.237, 1)
+shader_parameter/noiseScale = 20.0
+shader_parameter/blade_tex = ExtResource("2_kc3hw")
+shader_parameter/noise = SubResource("NoiseTexture2D_pier8")
+shader_parameter/windNoise = SubResource("NoiseTexture2D_dlx8c")

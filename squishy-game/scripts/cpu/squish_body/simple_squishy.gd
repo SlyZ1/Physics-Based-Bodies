@@ -351,7 +351,7 @@ func _handle_fps() -> void:
 	mean_fps += Engine.get_frames_per_second()
 	iteration += 1
 	if iteration == 20:
-		#print("fps : ", mean_fps / 20)
+		print("fps : ", mean_fps / 20)
 		mean_fps = 0
 		iteration = 0
 
