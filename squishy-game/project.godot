@@ -82,3 +82,7 @@ playerPos={
 "type": "vec3",
 "value": Vector3(0, 0, 0)
 }
+cameraDir={
+"type": "vec3",
+"value": Vector3(1, 0, 0)
+}

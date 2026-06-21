@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://21ejw5mp0xmm"]
+
+[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="1_1yshh"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lg146"]
+
+[node name="Rigidbody" type="MeshInstance3D" node_paths=PackedStringArray("ground_nodes", "gizmo")]
+transform = Transform3D(1, 0, 0, 0, 4.5475, 0, 0, 0, 4.37637, 3.77546, 2.18989, 13.3614)
+mesh = SubResource("BoxMesh_lg146")
+script = ExtResource("1_1yshh")
+ground_nodes = [NodePath("")]
+gizmo = NodePath("")
+g = 20.0
+energy_absorption = 0.449
+linear_damping = 1.0
+angular_damping = 1.0
+friction_factor = 0.5
+velocity_thresh = 0.1
+angular_velocity_thresh = 0.4
+sleep_delay = 0.7

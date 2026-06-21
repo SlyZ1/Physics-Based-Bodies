@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=25 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
@@ -10,7 +10,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_l32nw"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
-[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="11_ukla3"]
+[ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="9_mqdkq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
 sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
@@ -52,8 +52,6 @@ albedo_texture = ExtResource("1_ppqmt")
 uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wkq7k"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_lg146"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
 
@@ -205,20 +203,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
 
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
-[node name="Rigidbody" type="MeshInstance3D" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes", "gizmo")]
-transform = Transform3D(1, 0, 0, 0, 4.5475, 0, 0, 0, 4.37637, 3.77546, 2.18989, 13.3614)
-mesh = SubResource("BoxMesh_lg146")
-script = ExtResource("11_ukla3")
-ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
-gizmo = NodePath("../../Gizmos/RigidbodyGizmo")
-g = 20.0
-energy_absorption = 0.449
-linear_damping = 1.0
-angular_damping = 1.0
-friction_factor = 0.5
-velocity_thresh = 0.1
-angular_velocity_thresh = 0.4
-sleep_delay = 0.7
+[node name="Rigidbody" parent="Dynamic Colliding Objects" instance=ExtResource("9_mqdkq")]
 
 [node name="Interactables" type="Node" parent="."]
 

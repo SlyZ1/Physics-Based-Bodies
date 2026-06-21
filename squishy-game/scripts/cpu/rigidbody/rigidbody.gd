@@ -25,14 +25,17 @@ class_name Rigidbody
 @export var sleep_delay: float = 0.5
 
 var vertices: PackedVector3Array
+var col_normals: PackedVector3Array
 var N: int
 var initial_pos: Vector3
 
 var glob_acc: Vector3
 var glob_vel: Vector3
+var last_glob_vel: Vector3
 
 var glob_angular_acc: Vector3
 var glob_angular_vel: Vector3
+var last_glob_angular_vel: Vector3
 
 var inverse_inertia_tensor: Basis
 
@@ -51,9 +54,24 @@ func add_angular_vel(vel: Vector3) -> void:
 
 func add_angular_acc(acc: Vector3) -> void:
 	glob_angular_acc += acc
+	
+func get_normal_col(origin: Vector3, force: Vector3) -> Vector3:
+	force = force.normalized()
+	var offset: Vector3 = origin - global_transform.origin
+	offset = offset - force * min(2 * force.dot(offset), 0)
+	origin = global_transform.origin + offset
+	var normal: Vector3
+	for i in range(N):
+		var pos = global_transform * vertices[i]
+		if (global_transform.basis.inverse() * (origin - pos)).length() <= 1:
+			normal = (normal + col_normals[i]).normalized()
+	return normal
 
-func add_impact(origin: Vector3, force: Vector3) -> void:
+func add_impact(origin: Vector3, force: Vector3, apply_contacts: bool) -> void:
 	if force.length() < 1e-8: return
+	if apply_contacts:
+		var normal = get_normal_col(origin, force)
+		force -= normal * min(normal.dot(force), 0)
 	is_sleeping = false
 	var r: Vector3 = origin - global_transform.origin
 	var force_dir: Vector3 = force.normalized()
@@ -73,8 +91,8 @@ func add_force(origin: Vector3, force: Vector3) -> void:
 
 func get_loc_vel(origin: Vector3) -> Vector3:
 	var r: Vector3 = origin - global_transform.origin
-	var p_angular_vel: Vector3 = glob_angular_vel.cross(r)
-	var p_vel: Vector3 = glob_vel + p_angular_vel
+	var p_angular_vel: Vector3 = last_glob_angular_vel.cross(r)
+	var p_vel: Vector3 = last_glob_vel + p_angular_vel
 	return p_vel
 
 func _start_simulation() -> void:
@@ -94,6 +112,7 @@ func _ready() -> void:
 	vertices = MeshUtils.get_vertices(mesh)
 	N = vertices.size()
 	was_colliding.resize(N)
+	col_normals.resize(N)
 	initial_pos = global_position
 
 func _compute_inverse_inertia_tensor() -> Basis:
@@ -136,6 +155,8 @@ func _integrate(dt: float) -> void:
 func _collide(dt) -> void:
 	var restrict_lin: Vector3 = Vector3(restrict_linX, restrict_linY, restrict_linZ)
 	restrict_lin = Vector3.ONE - restrict_lin
+	for i in range(N):
+		col_normals[i] *= 0
 	for ground_node in ground_nodes:
 		var ground_up: Vector3 = ground_node.basis.y.normalized()
 		var ground_pos: float = ground_node.global_position.dot(ground_up)
@@ -150,14 +171,13 @@ func _collide(dt) -> void:
 
 			if penetration >= 0:
 				is_colliding = true
+				col_normals[i] = (col_normals[i] + ground_up).normalized()
 
 				var d_vel: float = ground_up.dot(p_vel)
 
 				var slop: float = 0.001
-				var tangent_vel: Vector3 = p_vel - ground_up * d_vel
-				var friction_force: Vector3 = -friction_factor * tangent_vel
 				if penetration > slop:
-					var k: float = 1e6 * m
+					var k: float = 1e8 * m
 					var d: float = 2 * sqrt(k * m)
 					
 					var gamma = 1 / (d + dt * k)
@@ -166,16 +186,18 @@ func _collide(dt) -> void:
 					var v2: float = d_vel + beta/(m * gamma) * penetration
 					v2 /= 1 + dt / (m * gamma)
 					var delta_v = (v2 - d_vel) * ground_up
-					add_impact(pos, delta_v)
-					if !was_colliding[i]:
-						add_impact(pos, friction_force)
-					else:
-						add_force(pos, friction_force * dt)
+					add_impact(pos, delta_v, false)
+					
+					p_angular_vel = glob_angular_vel.cross(r)
+					p_vel = glob_vel + p_angular_vel
+					var tangent_vel: Vector3 = p_vel - ground_up * ground_up.dot(p_vel)
+					var friction_force: Vector3 = -friction_factor * tangent_vel
+					add_impact(pos, friction_force, false)
 
 				if d_vel < -0.01:
 					if !was_colliding[i]:
 						var collision_force: Vector3 = -(2 - energy_absorption) * d_vel * ground_up
-						add_impact(pos, collision_force)
+						add_impact(pos, collision_force, false)
 					was_colliding[i] = true
 				else:
 					was_colliding[i] = false
@@ -193,6 +215,9 @@ func _process(dt: float) -> void:
 	dt = min(dt, 1.0 / 45.0)
 
 	if is_sleeping: return
-	_integrate(dt)
-	_collide(dt)
+	var customDt = dt
+	_integrate(customDt)
+	_collide(customDt)
+	last_glob_vel = glob_vel
+	last_glob_angular_vel = glob_angular_vel
 	_sleep_check(dt)

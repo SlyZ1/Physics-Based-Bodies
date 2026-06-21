@@ -1,6 +1,124 @@
 class_name MeshUtils
 extends Object
 
+static var _vertex_map: Dictionary = {}
+static var _final_vertices: PackedVector3Array
+static var _radius: float = 1.0
+
+static func generate_geodesic_sphere(frequency: int, radius: float = 1.0) -> Dictionary:
+	_vertex_map.clear()
+	_final_vertices = PackedVector3Array()
+	_radius = radius
+
+	var t = (1.0 + sqrt(5.0)) / 2.0
+
+	var base_vertices = [
+		Vector3(-1,  t,  0), Vector3( 1,  t,  0), Vector3(-1, -t,  0), Vector3( 1, -t,  0),
+		Vector3( 0, -1,  t), Vector3( 0,  1,  t), Vector3( 0, -1, -t), Vector3( 0,  1, -t),
+		Vector3( t,  0, -1), Vector3( t,  0,  1), Vector3(-t,  0, -1), Vector3(-t,  0,  1)
+	]
+	for i in base_vertices.size():
+		base_vertices[i] = base_vertices[i].normalized()
+
+	var base_faces = [
+		[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+		[1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+		[3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+		[4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+	]
+
+	var final_indices: PackedInt32Array = PackedInt32Array()
+
+	var base_vertex_indices: Array = []
+	for bv in base_vertices:
+		base_vertex_indices.append(_get_or_add_vertex(bv * radius))
+
+	for face in base_faces:
+		var v0 = base_vertices[face[0]]
+		var v1 = base_vertices[face[1]]
+		var v2 = base_vertices[face[2]]
+
+		var grid: Array = []
+		for i in range(frequency + 1):
+			var row: Array = []
+			for j in range(frequency + 1 - i):
+				var idx: int
+				if i == 0 and j == 0:
+					idx = base_vertex_indices[face[0]]
+				elif i == frequency and j == 0:
+					idx = base_vertex_indices[face[1]]
+				elif i == 0 and j == frequency:
+					idx = base_vertex_indices[face[2]]
+				else:
+					var a = float(i) / frequency
+					var b = float(j) / frequency
+					var c = 1.0 - a - b
+					var p = (v0 * c + v1 * a + v2 * b).normalized() * radius
+					idx = _get_or_add_vertex(p)
+				row.append(idx)
+			grid.append(row)
+
+		for i in range(frequency):
+			for j in range(frequency - i):
+				var i0 = grid[i][j]
+				var i1 = grid[i + 1][j]
+				var i2 = grid[i][j + 1]
+				final_indices.append(i0)
+				final_indices.append(i2)
+				final_indices.append(i1)
+
+				if j < frequency - i - 1:
+					var i3 = grid[i + 1][j + 1]
+					final_indices.append(i1)
+					final_indices.append(i2)
+					final_indices.append(i3)
+
+	return {"vertices": _final_vertices, "indices": final_indices}
+
+
+static func _get_or_add_vertex(p: Vector3) -> int:
+	var px = p.x if abs(p.x) > 1e-4 else 0.0
+	var py = p.y if abs(p.y) > 1e-4 else 0.0
+	var pz = p.z if abs(p.z) > 1e-4 else 0.0
+	var key = "%.4f,%.4f,%.4f" % [px, py, pz]
+	if _vertex_map.has(key):
+		return _vertex_map[key]
+	var idx = _final_vertices.size()
+	_final_vertices.append(p)
+	_vertex_map[key] = idx
+	return idx
+
+
+static func build_geodesic_mesh(frequency: int, radius: float = 1.0) -> ArrayMesh:
+	var data = generate_geodesic_sphere(frequency, radius)
+	var vertices: PackedVector3Array = data["vertices"]
+	var indices: PackedInt32Array = data["indices"]
+
+	var normals := PackedVector3Array()
+	for v in vertices:
+		normals.append(v.normalized())
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_INDEX] = indices
+	
+	var verts = data["vertices"]
+	var seen = {}
+	for i in verts.size():
+		var found_dup = false
+		for key in seen.keys():
+			if verts[i].distance_to(seen[key]) < 0.01:
+				print("Doublon: index ", i, " (", verts[i], ") proche de index ", key, " (", seen[key], "), distance=", verts[i].distance_to(seen[key]))
+				found_dup = true
+		if not found_dup:
+			seen[i] = verts[i]
+
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
 static func create_icosphere(r: float, subs: int) -> ArrayMesh:
 	var t = (1.0 + sqrt(5.0)) / 2.0
 	var verts = PackedVector3Array([

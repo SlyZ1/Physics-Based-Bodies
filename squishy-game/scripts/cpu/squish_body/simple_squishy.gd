@@ -115,10 +115,11 @@ func get_local_basis(up_vec: Vector3) -> Basis:
 func _ready() -> void:
 	# INITIALIZE ARRAYS AND DATA
 	core = self
-	mesh = MeshUtils.create_icosphere(0.5, 3)
+	mesh = MeshUtils.build_geodesic_mesh(5, 0.5)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
 	pos = anchor_point_arr.duplicate()
 	N = anchor_point_arr.size();
+	print(N)
 	loc_acc.resize(N)
 	loc_vel.resize(N)
 	anch_spring_acc.resize(N)
@@ -246,7 +247,6 @@ func _collide(dt: float, old_center: Vector3) -> void:
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	var new_collision_dir: Vector3 = Vector3.ZERO
-	
 	for i in range(N):
 		var global_start: Vector3 = global_transform * old_pos[i]
 		var global_end: Vector3 = global_transform * pos[i]
@@ -297,7 +297,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 			
 			# REBOUND PARAMETERS
 			var dot_prod: float = hit_local_normal.dot(anchor_spring + center_spring)
-			var hardness: float = horizontal_hardness if abs(hit_local_normal.dot(Vector3.UP)) < 0.5 else 0.0
+			var hardness: float = horizontal_hardness if abs(hit_local_normal.dot(Vector3.UP)) < 0.4 else 0.0
 			var hardness_factor: float = 1 + 7 * pow(hardness, 2)
 			var energy_abs_factor: float = 1 + 1.5 * (1 - energy_abs)
 			
@@ -314,7 +314,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				var impact_force = d_vel * m / best_hit_rb.m
 				
 				# Apply impact
-				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force)
+				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force, true)
 
 
 	collision_dir /= N
