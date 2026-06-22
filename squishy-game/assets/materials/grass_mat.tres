@@ -6,6 +6,7 @@
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_bfroh"]
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pier8"]
+seamless = true
 noise = SubResource("FastNoiseLite_bfroh")
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_613dv"]
@@ -15,13 +16,16 @@ fractal_lacunarity = 1.0
 fractal_gain = 1.0
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_dlx8c"]
+seamless = true
 noise = SubResource("FastNoiseLite_613dv")
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_0m1jo")
+shader_parameter/toggleFallOff = true
 shader_parameter/color = Color(0.247, 0.52, 0.156, 1)
 shader_parameter/color2 = Color(0.37525, 0.79, 0.237, 1)
+shader_parameter/toggleWind = true
 shader_parameter/noiseScale = 40.0
 shader_parameter/blade_tex = ExtResource("2_kc3hw")
 shader_parameter/noise = SubResource("NoiseTexture2D_pier8")

@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://dwjv7eus5il2b"]
+
+[ext_resource type="Shader" path="res://scripts/gpu/grass.gdshader" id="1_4n0aw"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_bfroh"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pier8"]
+seamless = true
+noise = SubResource("FastNoiseLite_bfroh")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_4n0aw")
+shader_parameter/toggleFallOff = false
+shader_parameter/color = Color(0.247, 0.52, 0.156, 1)
+shader_parameter/color2 = Color(0.37525, 0.79, 0.237, 1)
+shader_parameter/toggleWind = null
+shader_parameter/noiseScale = 40.0
+shader_parameter/noise = SubResource("NoiseTexture2D_pier8")

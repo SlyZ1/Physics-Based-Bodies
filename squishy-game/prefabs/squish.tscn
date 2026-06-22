@@ -1,0 +1,55 @@
+[gd_scene load_steps=8 format=3 uid="uid://bl6thaeapw12n"]
+
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="1_vmnh3"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="2_qp658"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="3_o1sao"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_y2rib"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_v0pq7"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="6_8naq0"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_hjnoc"]
+
+[node name="Squish" type="MeshInstance3D" node_paths=PackedStringArray("static_colliders_parent", "dynamic_colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
+mesh = SubResource("SphereMesh_hjnoc")
+script = ExtResource("1_vmnh3")
+static_colliders_parent = NodePath("")
+dynamic_colliders_parent = NodePath("")
+center_node = NodePath("Center")
+center_gizmo = NodePath("")
+gizmo1 = NodePath("")
+gizmo2 = NodePath("")
+energy_abs = 0.752
+squish_factor = 0.725
+
+[node name="Move" type="Node" parent="." node_paths=PackedStringArray("squishy", "cam_container")]
+script = ExtResource("2_qp658")
+squishy = NodePath("..")
+cam_container = NodePath("")
+ground_force = 40.0
+air_force = 15.0
+ground_friction = 4.5
+air_friction = 0.75
+
+[node name="Jump" type="Node" parent="." node_paths=PackedStringArray("squishy")]
+script = ExtResource("3_o1sao")
+squishy = NodePath("..")
+jump_force = 15.0
+coyotee_time = 0.03
+jump_buffer_time = 0.1
+
+[node name="Deform" type="Node" parent="." node_paths=PackedStringArray("squishy", "cam_container")]
+script = ExtResource("4_y2rib")
+squishy = NodePath("..")
+cam_container = NodePath("")
+
+[node name="Fall" type="Node" parent="." node_paths=PackedStringArray("squishy")]
+script = ExtResource("5_v0pq7")
+squishy = NodePath("..")
+min_height = -10.0
+
+[node name="UpdateGrass" type="Node" parent="." node_paths=PackedStringArray("squishy", "camera")]
+script = ExtResource("6_8naq0")
+squishy = NodePath("..")
+camera = NodePath("")
+
+[node name="Center" type="Node3D" parent="."]

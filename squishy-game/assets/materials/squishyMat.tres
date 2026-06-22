@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://clevp626resuk"]
+
+[ext_resource type="Shader" path="res://scripts/gpu/simple_squishy.gdshader" id="1_7nq6k"]
+[ext_resource type="Texture2D" uid="uid://d3a2fwwwtaqjx" path="res://assets/models/squishyTex.png" id="2_tgx8b"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_7nq6k")
+shader_parameter/color = Color(1, 0.2, 0.2, 1)
+shader_parameter/faceTex = ExtResource("2_tgx8b")

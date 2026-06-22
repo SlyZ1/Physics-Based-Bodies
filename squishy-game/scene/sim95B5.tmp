@@ -1,10 +1,9 @@
-[gd_scene load_steps=31 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=30 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_il78g"]
 [ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="3_31lwa"]
-[ext_resource type="Script" path="res://scripts/cpu/squish_body/rotate_from_cam_squishy.gd" id="4_5w8d5"]
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
@@ -105,11 +104,6 @@ air_force = 15.0
 ground_friction = 4.5
 air_friction = 0.75
 
-[node name="Rotate" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
-script = ExtResource("4_5w8d5")
-squishy = NodePath("..")
-move_squishy = NodePath("../Move")
-
 [node name="Jump" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
 script = ExtResource("4_yyrdy")
 squishy = NodePath("..")
@@ -136,7 +130,6 @@ camera = NodePath("../../CameraContainer")
 
 [node name="Gizmos" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
-visible = false
 
 [node name="CenterGizmo" type="MeshInstance3D" parent="Gizmos"]
 transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)

@@ -136,7 +136,6 @@ camera = NodePath("../../CameraContainer")
 
 [node name="Gizmos" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
-visible = false
 
 [node name="CenterGizmo" type="MeshInstance3D" parent="Gizmos"]
 transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)

@@ -27,6 +27,7 @@ extends MeshInstance3D
 @export_group("Debug")
 @export_range(0,1) var smooth_factor: float = 1
 
+var original_anchor_point_arr: PackedVector3Array
 var anchor_point_arr: PackedVector3Array
 var loc_acc: PackedVector3Array = []
 var loc_vel: PackedVector3Array = []
@@ -49,7 +50,7 @@ var is_colliding: bool
 
 var anchor_vel: Vector3
 var squeleton: Array[Node3D] = []
-var neighbours: Array
+var neighbours: Dictionary
 var static_collision_BVH: BoundingSphereTree.SphereNode
 var dynamic_collision_BVH: BoundingSphereTree.SphereNode
 
@@ -79,6 +80,11 @@ func get_local_real_center() -> Vector3:
 	
 func get_pos() -> PackedVector3Array:
 	return pos
+	
+func rotate_of_angles(rotation_quat: Quaternion, rotation_delta: Quaternion) -> void:
+	for i in range(N):
+		anchor_point_arr[i] = squeleton_center + rotation_quat * original_anchor_point_arr[i]
+		pos[i] = pos_center + rotation_delta * (pos[i] - pos_center)
 	
 func get_vertex_in_dir(dir: Vector3) -> int:
 	var best_dot: float = -INF
@@ -115,8 +121,8 @@ func get_local_basis(up_vec: Vector3) -> Basis:
 func _ready() -> void:
 	# INITIALIZE ARRAYS AND DATA
 	core = self
-	mesh = MeshUtils.build_geodesic_mesh(5, 0.5)
 	anchor_point_arr = MeshUtils.get_vertices(mesh)
+	original_anchor_point_arr = anchor_point_arr.duplicate()
 	pos = anchor_point_arr.duplicate()
 	N = anchor_point_arr.size();
 	print(N)
@@ -125,10 +131,11 @@ func _ready() -> void:
 	anch_spring_acc.resize(N)
 	anch_spring_vel.resize(N)
 	old_pos.resize(N)
-	mesh = MeshUtils.set_vertices(mesh, pos)
+	squeleton.resize(N)
 	var center: Vector3 = MeshUtils.get_center(pos)
 	radius = (center - pos[0]).length()
-	neighbours = MeshUtils.compute_neighbors(mesh)
+	mesh = MeshUtils.set_vertices(mesh, pos, Vector3.ZERO)
+	neighbours = MeshSmoother.compute_neighbors(mesh)
 	
 	# SETUP GIZMOS (for debug purposes)
 	for i in range(N):
@@ -145,7 +152,7 @@ func _ready() -> void:
 		dup.material_override = mat
 		dup.position = global_transform * anchor_point_arr[i]
 		center_gizmo.get_parent().add_child(dup)
-		squeleton.append(dup)
+		squeleton[i] = dup
 	static_collision_BVH = MeshCollisions.create_collision_BVH_object(static_colliders_parent)
 	
 func _compute_glob_acc() -> Vector3:
@@ -364,9 +371,9 @@ func _physics(dt: float) -> void:
 	old_pos = pos.duplicate()
 	
 func _refresh_mesh() -> void:
-	var vertices = MeshUtils.smooth_mesh(mesh, pos, neighbours, smooth_factor)
+	var vertices = MeshSmoother.smooth_mesh(pos, neighbours["neighbours"], smooth_factor)
 	var mesh_center: Vector3 = MeshUtils.get_center(vertices)
-	mesh = MeshUtils.set_vertices(mesh, vertices)
+	mesh = MeshUtils.set_vertices(mesh, vertices, mesh_center)
 	center_node.global_position = global_transform * mesh_center
 	custom_aabb = AABB()
 	

@@ -89,6 +89,30 @@ static func _get_or_add_vertex(p: Vector3) -> int:
 	return idx
 
 
+static func export_mesh_to_obj(mesh_data: Dictionary, path: String) -> void:
+	var vertices: PackedVector3Array = mesh_data["vertices"]
+	var indices: PackedInt32Array = mesh_data["indices"]
+	
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_error("Impossible d'ouvrir le fichier: " + path)
+		return
+	
+	file.store_line("# Exported from Godot")
+	
+	for v in vertices:
+		file.store_line("v %f %f %f" % [v.x, v.y, v.z])
+	
+	# OBJ utilise des index 1-based, pas 0-based
+	for i in range(0, indices.size(), 3):
+		var i0 = indices[i] + 1
+		var i1 = indices[i + 1] + 1
+		var i2 = indices[i + 2] + 1
+		file.store_line("f %d %d %d" % [i0, i1, i2])
+	
+	file.close()
+	print("Mesh exportée vers: ", path)
+
 static func build_geodesic_mesh(frequency: int, radius: float = 1.0) -> ArrayMesh:
 	var data = generate_geodesic_sphere(frequency, radius)
 	var vertices: PackedVector3Array = data["vertices"]
@@ -181,35 +205,6 @@ static func _midpoint(a: int, b: int, verts: PackedVector3Array, cache: Dictiona
 	cache[key] = idx
 	return idx
 
-static func compute_neighbors(mesh: Mesh) -> Array:
-	var mesh_data: Array = mesh.surface_get_arrays(0)
-	var vertices: PackedVector3Array = mesh_data[Mesh.ARRAY_VERTEX]
-	var indices: PackedInt32Array = mesh_data[Mesh.ARRAY_INDEX]
-	var n = vertices.size()
-	
-	var neighbors: Array = []
-	neighbors.resize(n)
-	for i in range(n):
-		neighbors[i] = {}
-	
-	for t in range(0, indices.size(), 3):
-		var a = indices[t]
-		var b = indices[t + 1]
-		var c = indices[t + 2]
-		neighbors[a][b] = true
-		neighbors[a][c] = true
-		neighbors[b][a] = true
-		neighbors[b][c] = true
-		neighbors[c][a] = true
-		neighbors[c][b] = true
-	
-	var result: Array = []
-	result.resize(n)
-	for i in range(n):
-		result[i] = neighbors[i].keys()
-	
-	return result
-
 static func get_vertices(mesh: Mesh) -> PackedVector3Array:
 	var mesh_data: Array = mesh.surface_get_arrays(0)
 	return mesh_data[Mesh.ARRAY_VERTEX]
@@ -252,12 +247,21 @@ static func get_volume_center(arr: PackedVector3Array, mesh: Mesh) -> Vector3:
 	center /= total_volume
 	return center
 
-static func set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh:
+static func set_vertices(mesh: Mesh, vertices: PackedVector3Array, center: Vector3) -> ArrayMesh:
 	var surface: Array = mesh.surface_get_arrays(0)
+	var material: Material = mesh.surface_get_material(0)
 	surface[Mesh.ARRAY_VERTEX] = vertices
+	
+	var normals: PackedVector3Array
+	var N: int = vertices.size()
+	normals.resize(N)
+	for i in range(N):
+		normals[i] = (vertices[i] - center).normalized()
+	surface[Mesh.ARRAY_NORMAL] = normals
 	
 	var arr_mesh: ArrayMesh = ArrayMesh.new()
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	arr_mesh.surface_set_material(0, material)
 	return arr_mesh
 	
 static func fast_set_vertices(mesh: Mesh, mesh_rid: RID, vertices: PackedVector3Array, bounds: AABB) -> void:
@@ -279,16 +283,3 @@ static func set_triangles(mesh: Mesh, triangles: PackedInt32Array) -> ArrayMesh:
 	var arr_mesh: ArrayMesh = ArrayMesh.new()
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
 	return arr_mesh
-
-static func smooth_mesh(mesh: Mesh, vertices: PackedVector3Array, neighbours: Array, factor: float) -> PackedVector3Array:
-	var mesh_data: Array = mesh.surface_get_arrays(0)
-	var new_vertices: PackedVector3Array = vertices.duplicate()
-	for i in range(neighbours.size()):
-		var list: Array = neighbours[i]
-		var v_pos: Vector3 = new_vertices[i]
-		var center: Vector3
-		var num_neighbours: int = list.size()
-		for j in range(num_neighbours):
-			center += new_vertices[neighbours[i][j]]
-		new_vertices[i] = v_pos.lerp(center / (num_neighbours), factor)
-	return new_vertices
