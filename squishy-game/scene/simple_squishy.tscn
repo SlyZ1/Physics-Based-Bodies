@@ -1,7 +1,6 @@
-[gd_scene load_steps=31 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=30 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_il78g"]
-[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="1_ppqmt"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_60v1p"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="3_31lwa"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/rotate_from_cam_squishy.gd" id="4_5w8d5"]
@@ -17,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="12_y8ill"]
 [ext_resource type="ArrayMesh" uid="uid://dutha0hld51bu" path="res://assets/models/grass_blades.res" id="13_yiya2"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="16_7gptc"]
+[ext_resource type="PackedScene" uid="uid://o73wc3pegl3n" path="res://prefabs/air_particles.tscn" id="17_fhkfg"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
 sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
@@ -32,6 +32,31 @@ sky_material = SubResource("ProceduralSkyMaterial_vyorq")
 [sub_resource type="Environment" id="Environment_c8ed3"]
 background_mode = 2
 sky = SubResource("Sky_4rfvc")
+tonemap_mode = 3
+tonemap_white = 1.5
+ssao_enabled = true
+ssao_radius = 0.71
+ssao_intensity = 1.71
+ssao_detail = 1.27
+ssao_horizon = 0.28
+ssao_sharpness = 0.91
+glow_enabled = true
+glow_intensity = 1.78
+glow_strength = 0.84
+glow_bloom = 0.1
+glow_blend_mode = 1
+glow_hdr_threshold = 0.85
+glow_hdr_scale = 1.35
+glow_hdr_luminance_cap = 14.31
+fog_enabled = true
+fog_light_color = Color(0.330598, 0.58321, 0.728985, 1)
+fog_density = 0.002
+fog_aerial_perspective = 0.45
+fog_sky_affect = 0.459
+fog_depth_begin = 0.0
+fog_depth_end = 1667.7
+adjustment_enabled = true
+adjustment_contrast = 1.1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0itu"]
 no_depth_test = true
@@ -44,11 +69,6 @@ no_depth_test = true
 albedo_color = Color(0.32, 0.354, 1, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_nkany"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_au4dg"]
-albedo_color = Color(1, 1, 1, 0.517647)
-albedo_texture = ExtResource("1_ppqmt")
-uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wkq7k"]
 
@@ -182,12 +202,6 @@ mesh = SubResource("PlaneMesh_nkany")
 skeleton = NodePath("../..")
 surface_material_override/0 = ExtResource("9_25y0s")
 
-[node name="Ground4" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(-10, -8.74228e-07, 0, 8.74227e-07, -10, 0, 0, 0, 10, -6.03444, 10.3239, -36.696)
-mesh = SubResource("PlaneMesh_nkany")
-skeleton = NodePath("../..")
-surface_material_override/0 = SubResource("StandardMaterial3D_au4dg")
-
 [node name="Cube" type="MeshInstance3D" parent="Static Colliding Objects"]
 transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, -2.49787, -13.5566)
 mesh = SubResource("BoxMesh_wkq7k")
@@ -245,7 +259,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("9_mqdkq")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 3.77546, 2.18989, 13.3614)
 ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
+energy_absorption = 0.733
 
 [node name="Interactables" type="Node" parent="."]
 
@@ -302,3 +318,5 @@ multimesh = SubResource("MultiMesh_fp22y")
 
 [node name="LightGrass" parent="." instance=ExtResource("16_7gptc")]
 multimesh = SubResource("MultiMesh_t0qgt")
+
+[node name="AirParticles" parent="." instance=ExtResource("17_fhkfg")]
