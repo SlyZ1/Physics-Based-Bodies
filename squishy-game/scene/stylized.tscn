@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dop11cw0bg21o"]
+[gd_scene load_steps=24 format=3 uid="uid://dop11cw0bg21o"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_0bkt2"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="1_idfrl"]
@@ -11,8 +11,9 @@
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="8_nb1ks"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="9_tj4tg"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="10_5sid0"]
+[ext_resource type="Material" uid="uid://c3khyx5qg7fma" path="res://assets/materials/water.tres" id="12_8j7jl"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_8ldpx"]
 sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
 sky_horizon_color = Color(0.378, 0.5936, 0.84, 1)
 ground_bottom_color = Color(0.2706, 0.481203, 0.82, 1)
@@ -21,11 +22,36 @@ ground_curve = 0.251068
 sun_curve = 0.160766
 
 [sub_resource type="Sky" id="Sky_4rfvc"]
-sky_material = SubResource("ProceduralSkyMaterial_vyorq")
+sky_material = SubResource("ProceduralSkyMaterial_8ldpx")
 
-[sub_resource type="Environment" id="Environment_c8ed3"]
+[sub_resource type="Environment" id="Environment_8t5m8"]
 background_mode = 2
 sky = SubResource("Sky_4rfvc")
+tonemap_mode = 3
+tonemap_white = 1.5
+ssao_enabled = true
+ssao_radius = 0.71
+ssao_intensity = 1.71
+ssao_detail = 1.27
+ssao_horizon = 0.28
+ssao_sharpness = 0.91
+glow_enabled = true
+glow_intensity = 1.78
+glow_strength = 0.84
+glow_bloom = 0.1
+glow_blend_mode = 1
+glow_hdr_threshold = 0.85
+glow_hdr_scale = 1.35
+glow_hdr_luminance_cap = 14.31
+fog_enabled = true
+fog_light_color = Color(0.330598, 0.58321, 0.728985, 1)
+fog_density = 0.002
+fog_aerial_perspective = 0.45
+fog_sky_affect = 0.459
+fog_depth_begin = 0.0
+fog_depth_end = 1667.7
+adjustment_enabled = true
+adjustment_contrast = 1.1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0itu"]
 no_depth_test = true
@@ -42,6 +68,13 @@ albedo_color = Color(0.177733, 0.43, 0.086, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_yillc"]
 
+[sub_resource type="BoxMesh" id="BoxMesh_6n4gd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gj5iu"]
+albedo_color = Color(0.405, 0.56025, 0.75, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_5e0yc"]
+
 [node name="SimpleSquishy" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
 
@@ -50,7 +83,7 @@ transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0,
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_c8ed3")
+environment = SubResource("Environment_8t5m8")
 
 [node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("static_colliders_parent", "dynamic_colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
 mesh = ExtResource("1_0bkt2")
@@ -142,6 +175,46 @@ transform = Transform3D(30, 0, 0, 0, 30, 0, 0, 0, 30, 0, 5.06461, 0)
 material_override = SubResource("StandardMaterial3D_5uaey")
 mesh = SubResource("PlaneMesh_yillc")
 
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(1.87297, 0, 0, 0, 2.82795, 0, 0, 0, 6.82018, 9.39512, 6.53079, 0.241198)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(1.87297, 0, 0, 0, 2.82795, 0, 0, 0, 6.82018, 16.0439, 6.53079, 0.241198)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.187e-08, 0, -6.82018, 0, 2.82795, 0, 1.87297, 0, -2.9812e-07, 12.7195, 6.53079, -3.08317)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.187e-08, 0, -6.82018, 0, 2.82795, 0, 1.87297, 0, -2.9812e-07, 12.7195, 6.53079, 3.56557)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.74228e-08, 0, -2, 0, 4, 0, 2, 0, -8.74228e-08, 9.33484, 6.34583, 3.56557)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.74228e-08, 0, -2, 0, 4, 0, 2, 0, -8.74228e-08, 9.33484, 6.34583, -3.14021)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.74228e-08, 0, -2, 0, 4, 0, 2, 0, -8.74228e-08, 16.1042, 6.34583, -3.14021)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-8.74228e-08, 0, -2, 0, 4, 0, 2, 0, -8.74228e-08, 16.1042, 6.34583, 3.78919)
+mesh = SubResource("BoxMesh_6n4gd")
+surface_material_override/0 = SubResource("StandardMaterial3D_gj5iu")
+
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
@@ -150,7 +223,7 @@ ground_nodes = [NodePath("../../Static Colliding Objects/GroundPlane")]
 m = 20.0
 
 [node name="Rigidbody2" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(2.865, 0, 0, 0, 3.118, 0, 0, 0, 3, -7.13973, 8.7463, -1.47348)
+transform = Transform3D(2.865, 0, 0, 0, 3.118, 0, 0, 0, 3, -7.13973, 7.56727, -1.47348)
 ground_nodes = [NodePath("../../Static Colliding Objects/GroundPlane")]
 m = 10.0
 energy_absorption = 0.632
@@ -159,3 +232,8 @@ friction_factor = 0.6
 [node name="Grass" parent="." instance=ExtResource("9_tj4tg")]
 
 [node name="LightGrass" parent="." instance=ExtResource("10_5sid0")]
+
+[node name="Water" type="MeshInstance3D" parent="."]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 12.963, -10.5653, -0.00526643)
+mesh = SubResource("PlaneMesh_5e0yc")
+surface_material_override/0 = ExtResource("12_8j7jl")

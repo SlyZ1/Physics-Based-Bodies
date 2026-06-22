@@ -26,12 +26,12 @@ ground_horizon_color = Color(0.376471, 0.592157, 0.839216, 1)
 ground_curve = 0.251068
 sun_curve = 0.160766
 
-[sub_resource type="Sky" id="Sky_4rfvc"]
+[sub_resource type="Sky" id="Sky_28wvw"]
 sky_material = SubResource("ProceduralSkyMaterial_vyorq")
 
 [sub_resource type="Environment" id="Environment_c8ed3"]
 background_mode = 2
-sky = SubResource("Sky_4rfvc")
+sky = SubResource("Sky_28wvw")
 tonemap_mode = 3
 tonemap_white = 1.5
 ssao_enabled = true
@@ -261,7 +261,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("9_mqdkq")]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 3.77546, 2.18989, 13.3614)
 ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
+m = 15.0
 energy_absorption = 0.733
+friction_factor = 0.05
 
 [node name="Interactables" type="Node" parent="."]
 

@@ -1,0 +1,26 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3 uid="uid://c3khyx5qg7fma"]
+
+[ext_resource type="Shader" path="res://scripts/gpu/water.gdshader" id="1_0t8x6"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_8vxdw"]
+noise_type = 3
+fractal_octaves = 1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_630ls"]
+seamless = true
+noise = SubResource("FastNoiseLite_8vxdw")
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5efkb"]
+seamless = true
+noise = SubResource("FastNoiseLite_8vxdw")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_0t8x6")
+shader_parameter/transparency = 0.227
+shader_parameter/nearColor = Color(0, 0.797333, 0.92, 1)
+shader_parameter/farColor = Color(0.1116, 0.57536, 0.93, 1)
+shader_parameter/fadeFactor = 0.409
+shader_parameter/maxDepth = 4.095
+shader_parameter/wave_tex = SubResource("NoiseTexture2D_5efkb")
+shader_parameter/foam_tex = SubResource("NoiseTexture2D_630ls")
