@@ -41,6 +41,7 @@ var N: int
 var radius: float
 var pos_center: Vector3
 var squeleton_center: Vector3
+var collided_rb: Rigidbody
 
 var mean_collision_point: Vector3
 var mean_collision_normal: Vector3
@@ -62,6 +63,11 @@ func add_glob_acc(acc: Vector3) -> void:
 	
 func add_glob_vel(vel: Vector3) -> void:
 	glob_vel += vel
+	
+func apply_glob_vel(vel: Vector3, dt: float) -> void:
+	var velocity = vel * dt
+	for i in range(N):
+		anchor_point_arr[i] += velocity
 
 func add_loc_acc(acc: Vector3, i: int) -> void:
 	loc_acc[i] += acc
@@ -192,7 +198,7 @@ func _integrate(dt: float) -> void:
 	# CLAMP MAX "VERTICAL" (along normal) VELOCITY
 	var loc_basis: Basis = get_local_basis(collision_dir)
 	glob_vel = loc_basis.transposed() * glob_vel
-	glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
+	#glob_vel.y = clamp(glob_vel.y, -max_velocity, max_velocity)
 	glob_vel = loc_basis * glob_vel
 	
 	var mean_deformation: Vector3 = _compute_MD(pos_center) / 0.01
@@ -241,6 +247,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 	var global_squishy_distance = 0.0
 	old_center = MeshUtils.get_center(pos)
 	var g_old_center: Vector3 = global_transform * old_center
+	var total_rebound_force: Vector3
 	for i in range(N):
 		# no need to apply global_transform as scale is (1,1,1) and we are treating distances
 		var dist_sq: float = (old_center - pos[i]).length_squared()
@@ -253,6 +260,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
+	collided_rb = null
 	var new_collision_dir: Vector3 = Vector3.ZERO
 	for i in range(N):
 		var global_start: Vector3 = global_transform * old_pos[i]
@@ -310,7 +318,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 			
 			# REBOUND
 			var rebound_force = hit_local_normal * hardness_factor * min(dot_prod, 0) * energy_abs_factor * dt / N
-			glob_vel -= rebound_force
+			total_rebound_force -= rebound_force
 			if best_hit_rb != null:
 				# Prevent from traversing through the rigidbody
 				var p_vel: Vector3 = best_hit_rb.get_loc_vel(global_transform * pos[i])
@@ -321,8 +329,10 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				var impact_force = d_vel * m / best_hit_rb.m
 				
 				# Apply impact
+				collided_rb = best_hit_rb
 				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force, true)
-
+	if glob_vel.dot(total_rebound_force.normalized()) < max_velocity:
+		glob_vel += total_rebound_force
 
 	collision_dir /= N
 	if is_colliding && new_collision_dir.length() > 1e-2:
@@ -339,7 +349,7 @@ func _recenter(old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
 	if !is_colliding:
 		return
-	anchor_vel = (pos_center - old_pos_center).length() * collision_dir
+	anchor_vel = (pos_center - old_pos_center).length() * mean_collision_normal
 	for i in range(N):
 		anchor_point_arr[i] += anchor_vel
 	squeleton_center += anchor_vel
