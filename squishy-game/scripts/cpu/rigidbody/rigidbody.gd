@@ -8,6 +8,8 @@ class_name Rigidbody
 @export_subgroup("Global")
 @export var g: float = 9.8
 @export var m: float = 5
+@export var k_factor: float = 1e8
+@export_range(0, 1) var damping_factor: float = 1
 @export_range(0, 1) var energy_absorption: float = 0.5
 @export var linear_damping: float = 0.1
 @export var angular_damping: float = 0.1
@@ -19,6 +21,7 @@ class_name Rigidbody
 @export var restrict_angX: bool
 @export var restrict_angY: bool
 @export var restrict_angZ: bool
+@export var cancel_on_contact: bool = true
 @export_subgroup("Sleep Mode")
 @export var velocity_thresh: float = 0.01
 @export var angular_velocity_thresh: float = 0.01
@@ -67,11 +70,12 @@ func get_normal_col(origin: Vector3, force: Vector3) -> Vector3:
 			normal = (normal + col_normals[i]).normalized()
 	return normal
 
-func add_impact(origin: Vector3, force: Vector3, apply_contacts: bool) -> void:
-	if force.length() < 1e-8: return
+func add_impact(origin: Vector3, force: Vector3, apply_contacts: bool) -> Vector3:
+	if force.length() < 1e-8: return Vector3.ZERO
+	var normal: Vector3 = Vector3.ZERO
 	if apply_contacts:
-		var normal = get_normal_col(origin, force)
-		force -= normal * min(normal.dot(force), 0)
+		normal = get_normal_col(origin, force)
+		if cancel_on_contact: force -= normal * min(normal.dot(force), 0)
 	is_sleeping = false
 	var r: Vector3 = origin - global_transform.origin
 	var force_dir: Vector3 = force.normalized()
@@ -81,6 +85,7 @@ func add_impact(origin: Vector3, force: Vector3, apply_contacts: bool) -> void:
 	var impact_ang_vel: Vector3 = inverse_inertia_tensor * r.cross(j)
 	glob_vel += impact_vel
 	glob_angular_vel += impact_ang_vel
+	return normal
 
 func add_force(origin: Vector3, force: Vector3) -> void:
 	if force.length() < 1e-8: return
@@ -177,8 +182,8 @@ func _collide(dt) -> void:
 
 				var slop: float = 0.001
 				if penetration > slop:
-					var k: float = 1e8 * m
-					var d: float = 2 * sqrt(k * m)
+					var k: float = k_factor * m
+					var d: float = damping_factor * 2 * sqrt(k * m)
 					
 					var gamma = 1 / (d + dt * k)
 					var beta = dt * k * gamma

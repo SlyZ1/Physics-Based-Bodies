@@ -113,7 +113,7 @@ center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
 gizmo1 = NodePath("../Gizmos/Gizmo1")
 gizmo2 = NodePath("../Gizmos/Gizmo2")
-energy_abs = 0.752
+energy_abs = 0.688
 squish_factor = 0.725
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]

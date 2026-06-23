@@ -21,6 +21,10 @@ func _follow_target(delta: float):
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	_follow_target(delta)
+	if Input.is_action_just_pressed("escape"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if Input.is_action_just_pressed("lmb"):
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 var glob_rot: Vector2
 func _unhandled_input(event: InputEvent) -> void:

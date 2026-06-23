@@ -41,6 +41,12 @@ vec2 get_distorted_uv(vec2 s_uv, vec2 uv){
 }
 
 void fragment() {
+	vec3 scale = vec3(
+        length(MODEL_MATRIX[0].xyz),
+        length(MODEL_MATRIX[1].xyz),
+        length(MODEL_MATRIX[2].xyz)
+    );
+	vec2 uv = UV * scale.xz / 20.0;
 	vec2 distorted_screen_uv = get_distorted_uv(SCREEN_UV, UV);
 	float realDepth = get_linear_depth(INV_VIEW_MATRIX * INV_PROJECTION_MATRIX, distorted_screen_uv);
     
@@ -50,7 +56,7 @@ void fragment() {
 	depthColor = mix(depthColor, screenColor, transparency);
 	
 	bool depth_test = realDepth < 0.2;
-	bool foam_test = texture(foam_tex, UV * 2.0 + vec2(TIME * 0.02)).r > 0.9;
+	bool foam_test = texture(foam_tex, uv * 2.0 + vec2(TIME * 0.01)).r > 0.88;
 	if (depth_test || foam_test){
 		depthColor = vec3(1.0);
 	}

@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://dop11cw0bg21o"]
+[gd_scene load_steps=26 format=3 uid="uid://dop11cw0bg21o"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_0bkt2"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="1_idfrl"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="6_i7ije"]
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="7_getm2"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="8_nb1ks"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/boat_squishy.gd" id="9_pr3w7"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="9_tj4tg"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="10_5sid0"]
 [ext_resource type="Material" uid="uid://c3khyx5qg7fma" path="res://assets/materials/water.tres" id="12_8j7jl"]
@@ -95,7 +96,7 @@ center_node = NodePath("Center")
 center_gizmo = NodePath("../Gizmos/CenterGizmo")
 gizmo1 = NodePath("../Gizmos/Gizmo1")
 gizmo2 = NodePath("../Gizmos/Gizmo2")
-energy_abs = 0.705
+energy_abs = 0.752
 squish_factor = 0.725
 
 [node name="Move" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
@@ -133,6 +134,10 @@ min_height = -10.0
 script = ExtResource("6_i7ije")
 squishy = NodePath("..")
 camera = NodePath("../../CameraContainer")
+
+[node name="Boat" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
+script = ExtResource("9_pr3w7")
+squishy = NodePath("..")
 
 [node name="Center" type="Node3D" parent="Squish"]
 
@@ -181,53 +186,19 @@ transform = Transform3D(30, 0, 0, 0, 30, 0, 0, 0, 30, 0, 5.06461, 0)
 material_override = SubResource("StandardMaterial3D_5uaey")
 mesh = SubResource("PlaneMesh_yillc")
 
-[node name="GroundPlane2" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(30, 0, 0, 0, 30, 0, 0, 0, 30, 0, 5.06461, 102.687)
-material_override = SubResource("StandardMaterial3D_5uaey")
-mesh = SubResource("PlaneMesh_yillc")
-
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(27.7961, 0, 0, 0, 3.41, 0, 0, 0, 3.195, 2.24609, 5.24436, 31.0765)
-mesh = SubResource("BoxMesh_ht4ow")
-surface_material_override/0 = SubResource("StandardMaterial3D_ilc75")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(27.7961, 0, 0, 0, 3.41, 0, 0, 0, 3.195, 2.24609, 5.24436, 72.5801)
-mesh = SubResource("BoxMesh_ht4ow")
-surface_material_override/0 = SubResource("StandardMaterial3D_ilc75")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(-1.78005e-06, 0, -3.195, 0, 19.39, 0, 40.7228, 0, -1.39658e-07, 10.8997, 11.9146, 53.0716)
-mesh = SubResource("BoxMesh_ht4ow")
-surface_material_override/0 = SubResource("StandardMaterial3D_ilc75")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(-1.78005e-06, 0, -3.195, 0, 19.39, 0, 40.7228, 0, -1.39658e-07, -5.63903, 11.9146, 53.0716)
+transform = Transform3D(80, 0, 0, 0, 3.41, 0, 0, 0, 3.195, 2.24609, 5.24436, 31.0765)
 mesh = SubResource("BoxMesh_ht4ow")
 surface_material_override/0 = SubResource("StandardMaterial3D_ilc75")
 
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(-4.37114e-08, -4.5475, 0, 1, -1.98777e-07, 0, 0, 0, 4.37637, 2.82779, 9.83635, 44.7521)
+transform = Transform3D(0.450457, -4.06, 0, 0.892798, 2.04845, 0, 0, 0, 4.37637, 3.77546, 9.83635, 37.9649)
 ground_nodes = [NodePath("../../Water")]
-m = 10.0
-k_factor = 50.0
-damping_factor = 0.394
+k_factor = 100.0
+damping_factor = 0.734
 friction_factor = 0.005
-restrict_linX = true
-restrict_linZ = true
-cancel_on_contact = false
-
-[node name="Rigidbody3" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(-4.37114e-08, -4.5475, 0, 1, -1.98777e-07, 0, 0, 0, 4.37637, 2.82779, 9.83635, 57.762)
-ground_nodes = [NodePath("../../Water")]
-m = 10.0
-k_factor = 50.0
-damping_factor = 0.394
-friction_factor = 0.005
-restrict_linX = true
-restrict_linZ = true
 cancel_on_contact = false
 
 [node name="Rigidbody2" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
@@ -241,13 +212,7 @@ friction_factor = 0.6
 
 [node name="LightGrass" parent="." instance=ExtResource("10_5sid0")]
 
-[node name="Grass2" parent="." instance=ExtResource("9_tj4tg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 102.687)
-
-[node name="LightGrass2" parent="." instance=ExtResource("10_5sid0")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 102.687)
-
 [node name="Water" type="MeshInstance3D" parent="."]
-transform = Transform3D(9.02393, 0, 0, 0, 40, 0, 0, 0, 19.5235, 3.98389, -11.9429, 51.6078)
+transform = Transform3D(40, 0, 0, 0, 40, 0, 0, 0, 40, 3.98389, -11.0066, 72.3477)
 mesh = SubResource("PlaneMesh_5e0yc")
 surface_material_override/0 = ExtResource("12_8j7jl")
