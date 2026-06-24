@@ -214,8 +214,6 @@ func _integrate(dt: float) -> void:
 		var center_spring: Vector3 = k/m * normal * (custom_radius - dist_to_center)
 		
 		# SQUELETON SPRING FORCE
-		var custom_anchor_point: Vector3 = (anchor_point_arr[i] - squeleton_center).normalized()
-		custom_anchor_point = custom_anchor_point * custom_radius + squeleton_center
 		var anchor_offset: Vector3 = anchor_point_arr[i] - pos[i]
 		var anchor_spring: Vector3 = k/m * anchor_offset
 		
@@ -244,24 +242,24 @@ func _integrate(dt: float) -> void:
 func _collide(dt: float, old_center: Vector3) -> void:
 	dynamic_collision_BVH = MeshCollisions.create_collision_BVH_object(dynamic_colliders_parent)
 
+	var new_center = MeshUtils.get_center(pos)
+	var g_center: Vector3 = global_transform * new_center
 	var global_squishy_distance = 0.0
-	old_center = MeshUtils.get_center(pos)
-	var g_old_center: Vector3 = global_transform * old_center
-	var total_rebound_force: Vector3
 	for i in range(N):
 		# no need to apply global_transform as scale is (1,1,1) and we are treating distances
-		var dist_sq: float = (old_center - pos[i]).length_squared()
+		var dist_sq: float = (new_center - pos[i]).length_squared()
 		global_squishy_distance = max(global_squishy_distance, dist_sq)
-	global_squishy_distance = sqrt(global_squishy_distance) * 3
+	global_squishy_distance = sqrt(global_squishy_distance) + 1e-6
 	
-	var static_collision_triangles = BoundingSphereTree.query_sphere(static_collision_BVH, g_old_center, global_squishy_distance)
-	var dynamic_collision_triangles = BoundingSphereTree.query_sphere(dynamic_collision_BVH, g_old_center, global_squishy_distance)
+	var static_collision_triangles = BoundingSphereTree.query_sphere(static_collision_BVH, g_center, global_squishy_distance)
+	var dynamic_collision_triangles = BoundingSphereTree.query_sphere(dynamic_collision_BVH, g_center, global_squishy_distance)
 	var collision_triangles = static_collision_triangles + dynamic_collision_triangles
 
 	var inverse_transform = global_transform.inverse()
 	is_colliding = false
 	collided_rb = null
 	var new_collision_dir: Vector3 = Vector3.ZERO
+	var total_rebound_force: Vector3
 	for i in range(N):
 		var global_start: Vector3 = global_transform * old_pos[i]
 		var global_end: Vector3 = global_transform * pos[i]
@@ -349,7 +347,7 @@ func _recenter(old_pos_center) -> void:
 	pos_center = MeshUtils.get_center(pos)
 	if !is_colliding:
 		return
-	anchor_vel = (pos_center - old_pos_center).length() * mean_collision_normal
+	anchor_vel = (pos_center - old_pos_center).dot(mean_collision_normal) * mean_collision_normal
 	for i in range(N):
 		anchor_point_arr[i] += anchor_vel
 	squeleton_center += anchor_vel

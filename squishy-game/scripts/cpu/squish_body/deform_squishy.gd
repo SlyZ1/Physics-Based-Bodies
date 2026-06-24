@@ -1,4 +1,5 @@
 extends Node
+class_name DeformSquishy
 
 @export var squishy : Squishy
 @export var cam_container: Node3D 

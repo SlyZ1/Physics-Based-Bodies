@@ -5,7 +5,7 @@ static var _vertex_map: Dictionary = {}
 static var _final_vertices: PackedVector3Array
 static var _radius: float = 1.0
 
-static func generate_geodesic_sphere(frequency: int, radius: float = 1.0) -> Dictionary:
+static func generate_geodesic_data(frequency: int, radius: float = 1.0) -> Dictionary:
 	_vertex_map.clear()
 	_final_vertices = PackedVector3Array()
 	_radius = radius
@@ -31,7 +31,7 @@ static func generate_geodesic_sphere(frequency: int, radius: float = 1.0) -> Dic
 
 	var base_vertex_indices: Array = []
 	for bv in base_vertices:
-		base_vertex_indices.append(_get_or_add_vertex(bv * radius))
+		base_vertex_indices.append(_geodesic_get_or_add_vertex(bv * radius))
 
 	for face in base_faces:
 		var v0 = base_vertices[face[0]]
@@ -54,7 +54,7 @@ static func generate_geodesic_sphere(frequency: int, radius: float = 1.0) -> Dic
 					var b = float(j) / frequency
 					var c = 1.0 - a - b
 					var p = (v0 * c + v1 * a + v2 * b).normalized() * radius
-					idx = _get_or_add_vertex(p)
+					idx = _geodesic_get_or_add_vertex(p)
 				row.append(idx)
 			grid.append(row)
 
@@ -76,7 +76,7 @@ static func generate_geodesic_sphere(frequency: int, radius: float = 1.0) -> Dic
 	return {"vertices": _final_vertices, "indices": final_indices}
 
 
-static func _get_or_add_vertex(p: Vector3) -> int:
+static func _geodesic_get_or_add_vertex(p: Vector3) -> int:
 	var px = p.x if abs(p.x) > 1e-4 else 0.0
 	var py = p.y if abs(p.y) > 1e-4 else 0.0
 	var pz = p.z if abs(p.z) > 1e-4 else 0.0
@@ -114,7 +114,7 @@ static func export_mesh_to_obj(mesh_data: Dictionary, path: String) -> void:
 	print("Mesh exportée vers: ", path)
 
 static func build_geodesic_mesh(frequency: int, radius: float = 1.0) -> ArrayMesh:
-	var data = generate_geodesic_sphere(frequency, radius)
+	var data = generate_geodesic_data(frequency, radius)
 	var vertices: PackedVector3Array = data["vertices"]
 	var indices: PackedInt32Array = data["indices"]
 
