@@ -50,11 +50,16 @@ glow_hdr_scale = 1.35
 glow_hdr_luminance_cap = 14.31
 fog_enabled = true
 fog_light_color = Color(0.330598, 0.58321, 0.728985, 1)
+fog_sun_scatter = 0.45
 fog_density = 0.002
 fog_aerial_perspective = 0.45
 fog_sky_affect = 0.459
 fog_depth_begin = 0.0
 fog_depth_end = 1667.7
+volumetric_fog_density = 0.03
+volumetric_fog_albedo = Color(0.52, 0.792, 1, 1)
+volumetric_fog_ambient_inject = 1.19
+volumetric_fog_sky_affect = 0.324
 adjustment_enabled = true
 adjustment_contrast = 1.1
 
@@ -94,12 +99,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
+light_color = Color(1, 0.919833, 0.63, 1)
+light_energy = 1.139
+light_bake_mode = 1
 shadow_enabled = true
-
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.933, -7.75748, -13.2724)
-omni_range = 24.2788
-omni_attenuation = -0.714
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c8ed3")
@@ -125,10 +128,11 @@ air_force = 15.0
 ground_friction = 4.5
 air_friction = 0.75
 
-[node name="Rotate" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
+[node name="Rotate" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy", "deform_squishy")]
 script = ExtResource("4_5w8d5")
 squishy = NodePath("..")
 move_squishy = NodePath("../Move")
+deform_squishy = NodePath("../Deform")
 
 [node name="Jump" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
 script = ExtResource("4_yyrdy")
@@ -238,6 +242,36 @@ mesh = SubResource("BoxMesh_wkq7k")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 
+[node name="Cube10" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-0.439112, 5.16269, 7.12977e-07, 0, -2.25682e-07, 16.312, 39.9976, 0.0566784, 7.8274e-09, -21.2125, 7.6676, -0.406165)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube11" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-0.441009, 5.185, 7.16058e-07, 0, -2.26657e-07, 16.3825, 40.1704, 0.0569233, 7.86122e-09, 21.4402, 7.32326, 0.0620757)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube12" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-0.0682776, 39.4754, 3.18754e-07, -2.41841e-07, -7.88328e-07, 16.3122, 6.21925, 0.433361, 6.37812e-07, -0.323949, 7.479, 22.8591)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube13" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-0.0682776, 16.8629, 3.18754e-07, -2.41841e-07, -3.36753e-07, 16.3122, 6.21925, 0.185121, 6.37812e-07, -12.2874, 7.50109, -21.6412)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube14" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-0.0682776, 18.5318, 3.18754e-07, -2.41841e-07, -3.70082e-07, 16.3122, 6.21925, 0.203442, 6.37812e-07, 12.8155, 6.6589, -21.4754)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
 [node name="Cube9" type="MeshInstance3D" parent="Static Colliding Objects"]
 transform = Transform3D(-5.6656, -5.67289, -8.16068e-08, -1.9735e-14, -3.58617e-07, 2.7, -5.42287, 5.92681, 8.52595e-08, -15.545, 0.0101957, 15.0574)
 mesh = SubResource("BoxMesh_wkq7k")
@@ -284,11 +318,11 @@ spring_intensity = 20.0
 distance_threshold = 1.0
 
 [node name="Spring3" type="MeshInstance3D" parent="Interactables"]
-transform = Transform3D(1, 0, 0, 0, 0.0714436, 0.699701, 0, -0.0699701, 0.714436, 0, 9.33032, -4.14283)
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, 9.33032, -4.14283)
 mesh = SubResource("CylinderMesh_u24r5")
 skeleton = NodePath("../..")
 script = ExtResource("7_4onsn")
-spring_intensity = 20.0
+spring_intensity = 30.0
 distance_threshold = 1.0
 
 [node name="Spring4" type="MeshInstance3D" parent="Interactables"]

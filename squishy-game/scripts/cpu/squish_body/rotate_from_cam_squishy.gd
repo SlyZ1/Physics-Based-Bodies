@@ -2,6 +2,7 @@ extends Node
 
 @export var squishy: Squishy
 @export var move_squishy: MoveSquishy
+@export var deform_squishy: DeformSquishy
 @export var angle_damping: float = 5
 
 var forward: Vector3
@@ -10,6 +11,7 @@ func _ready() -> void:
 	forward = Vector3.FORWARD
 
 func _process(dt: float) -> void:
+	if deform_squishy.horz_flatten or deform_squishy.vert_flatten: return
 	var move_vector: Vector3 = move_squishy.get_move_force()
 	if move_vector.length() < 1: return
 	move_vector = move_vector.normalized()
