@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=33 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/playable-scene.gd" id="1_fbrm0"]
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_il78g"]
@@ -14,10 +14,12 @@
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
 [ext_resource type="Material" uid="uid://dwjv7eus5il2b" path="res://assets/materials/ground_grass_mat.tres" id="9_25y0s"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="9_mqdkq"]
+[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody_visual.gd" id="12_xu6nn"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="12_y8ill"]
 [ext_resource type="ArrayMesh" uid="uid://dutha0hld51bu" path="res://assets/models/grass_blades.res" id="13_yiya2"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="16_7gptc"]
-[ext_resource type="PackedScene" path="res://prefabs/air_particles.tscn" id="17_fhkfg"]
+[ext_resource type="PackedScene" uid="uid://o73wc3pegl3n" path="res://prefabs/air_particles.tscn" id="17_fhkfg"]
+[ext_resource type="PackedScene" uid="uid://dvxw60y54soif" path="res://prefabs/canon.tscn" id="19_wju7i"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
 sky_top_color = Color(0.588235, 0.772549, 0.898039, 1)
@@ -80,6 +82,9 @@ albedo_color = Color(0.32, 0.354, 1, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d3xsv"]
 albedo_color = Color(0.527, 0.54405, 0.62, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lc50g"]
+albedo_color = Color(1, 0.08, 0.08, 1)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
 
@@ -295,14 +300,27 @@ mesh = SubResource("BoxMesh_wkq7k")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 
+[node name="RigidbodyVisual" parent="." node_paths=PackedStringArray("parent_rigidbody") instance=ExtResource("9_mqdkq")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 3.77546, -14.9572, 13.3614)
+visible = false
+skeleton = NodePath("../Dynamic Colliding Objects/Rigidbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_lc50g")
+script = ExtResource("12_xu6nn")
+parent_rigidbody = NodePath("../Dynamic Colliding Objects/Rigidbody")
+
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("9_mqdkq")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 3.77546, 2.18989, 13.3614)
+transform = Transform3D(2.56133, 0, -1.56191, 0, 3, 0, 1.56191, 0, 2.56133, 3.77546, 2.18989, 13.3614)
 ground_nodes = [NodePath("../../Static Colliding Objects/Ground")]
 m = 15.0
 energy_absorption = 0.733
 friction_factor = 0.05
+restrict_linY = true
+restrict_linZ = true
+restrict_angX = true
+restrict_angY = true
+restrict_angZ = true
 
 [node name="Interactables" type="Node" parent="."]
 
@@ -367,3 +385,12 @@ skeleton = NodePath("../Static Colliding Objects")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 
 [node name="AirParticles" parent="." instance=ExtResource("17_fhkfg")]
+
+[node name="Decor" type="Node" parent="."]
+
+[node name="Canon" parent="Decor" instance=ExtResource("19_wju7i")]
+
+[node name="Canon2" parent="Decor" node_paths=PackedStringArray("groundNode", "dynamicDad") instance=ExtResource("19_wju7i")]
+transform = Transform3D(0.258014, 0.94893, 0.181549, -0.964966, 0.262374, 0, -0.0476337, -0.175189, 0.983382, -7.01954, 2.57421, -9.94659)
+groundNode = NodePath("../../Static Colliding Objects/Ground")
+dynamicDad = NodePath("../../Dynamic Colliding Objects")
