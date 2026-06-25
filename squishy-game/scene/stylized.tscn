@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://dop11cw0bg21o"]
+[gd_scene load_steps=26 format=3 uid="uid://dop11cw0bg21o"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_0bkt2"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="1_idfrl"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="8_nb1ks"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="9_tj4tg"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="10_5sid0"]
+[ext_resource type="PackedScene" uid="uid://cqtofuamtb6r4" path="res://prefabs/moulin.tscn" id="11_gplm5"]
 [ext_resource type="Material" uid="uid://c3khyx5qg7fma" path="res://assets/materials/water.tres" id="12_8j7jl"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_8ldpx"]
@@ -232,11 +233,14 @@ restrict_linZ = true
 cancel_on_contact = false
 
 [node name="Rigidbody2" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(2.865, 0, 0, 0, 3.118, 0, 0, 0, 3, -7.13973, 7.56727, -1.47348)
+transform = Transform3D(2.865, 0, 0, 0, 3.118, 0, 0, 0, 3, -24.1984, 6.9252, -24.4279)
 ground_nodes = [NodePath("../../Static Colliding Objects/GroundPlane")]
 m = 10.0
 energy_absorption = 0.632
 friction_factor = 0.6
+
+[node name="Moulin" parent="Dynamic Colliding Objects" instance=ExtResource("11_gplm5")]
+transform = Transform3D(-5.81716e-08, -5.81716e-08, -1.33081, -1.33081, 2.54276e-15, 5.81716e-08, 0, 1.33081, -5.81716e-08, -1.06656, 9.40972, -0.95228)
 
 [node name="Grass" parent="." instance=ExtResource("9_tj4tg")]
 
@@ -252,3 +256,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 102.687)
 transform = Transform3D(9.02393, 0, 0, 0, 40, 0, 0, 0, 19.5235, 3.98389, -11.9429, 51.6078)
 mesh = SubResource("PlaneMesh_5e0yc")
 surface_material_override/0 = ExtResource("12_8j7jl")
+
+[editable path="Dynamic Colliding Objects/Rigidbody2"]

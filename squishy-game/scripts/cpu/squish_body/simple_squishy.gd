@@ -243,11 +243,15 @@ func _collide(dt: float, old_center: Vector3) -> void:
 	dynamic_collision_BVH = MeshCollisions.create_collision_BVH_object(dynamic_colliders_parent)
 
 	var new_center = MeshUtils.get_center(pos)
-	var g_center: Vector3 = global_transform * new_center
+	old_center = MeshUtils.get_center(old_pos)
+	var center: Vector3 = (new_center + old_center) / 2
+	var g_center: Vector3 = global_transform * center
 	var global_squishy_distance = 0.0
 	for i in range(N):
 		# no need to apply global_transform as scale is (1,1,1) and we are treating distances
-		var dist_sq: float = (new_center - pos[i]).length_squared()
+		var new_dist_sq: float = (center - pos[i]).length_squared()
+		var old_dist_sq: float = (center - old_pos[i]).length_squared()
+		var dist_sq: float = max(new_dist_sq, old_dist_sq)
 		global_squishy_distance = max(global_squishy_distance, dist_sq)
 	global_squishy_distance = sqrt(global_squishy_distance) + 1e-6
 	
@@ -260,6 +264,7 @@ func _collide(dt: float, old_center: Vector3) -> void:
 	collided_rb = null
 	var new_collision_dir: Vector3 = Vector3.ZERO
 	var total_rebound_force: Vector3
+	var moving_compensation: Vector3
 	for i in range(N):
 		var global_start: Vector3 = global_transform * old_pos[i]
 		var global_end: Vector3 = global_transform * pos[i]
@@ -320,7 +325,8 @@ func _collide(dt: float, old_center: Vector3) -> void:
 			if best_hit_rb != null:
 				# Prevent from traversing through the rigidbody
 				var p_vel: Vector3 = best_hit_rb.get_loc_vel(global_transform * pos[i])
-				pos[i] += hit_local_normal * max(p_vel.dot(hit_local_normal) * dt, 0)
+				p_vel = global_transform.basis.transposed() * p_vel
+				moving_compensation += hit_local_normal * max(p_vel.dot(hit_local_normal), 0) * dt / N
 				
 				# Compute impact force
 				var d_vel = rebound_force / dt
@@ -331,6 +337,8 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force, true)
 	if glob_vel.dot(total_rebound_force.normalized()) < max_velocity:
 		glob_vel += total_rebound_force
+	for i in range(N):
+		loc_vel[i] += moving_compensation / dt
 
 	collision_dir /= N
 	if is_colliding && new_collision_dir.length() > 1e-2:
@@ -371,10 +379,11 @@ func _handle_fps() -> void:
 		iteration = 0
 
 func _physics(dt: float) -> void:
+	var test: Vector3 = MeshUtils.get_center(pos)
 	_integrate(dt)
 	var old_center: Vector3 = MeshUtils.get_center(pos)
 	squeleton_center = MeshUtils.get_center(anchor_point_arr)
-	_collide(dt, old_center)
+	_collide(dt, test)
 	_recenter(old_center)
 	old_pos = pos.duplicate()
 	

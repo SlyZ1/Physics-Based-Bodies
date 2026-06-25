@@ -1,14 +1,19 @@
 class_name MeshCollisions
 extends Object
 
+static func _get_rigidbody_recursive(child: Node) -> Rigidbody:
+	if child.get_parent() == null: return null
+	if child.get_parent().get_parent() == null: return null
+	if child is Rigidbody: return child
+	return _get_rigidbody_recursive(child.get_parent())
+
 static func _extract_collider_geometry(colliders_parent: Node) -> Array:
 	var collision_object_triangles: Array
 	var children = colliders_parent.find_children("*", "", true, false)
 	for child in children:
 		var triangles: Array = []
 		if child is MeshInstance3D and child.mesh:
-			var rb: Rigidbody = null
-			if child is Rigidbody: rb = child
+			var rb: Rigidbody = _get_rigidbody_recursive(child as Node)
 			var faces = child.mesh.get_faces() 
 			var child_transform = child.global_transform
 			
