@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvxw60y54soif"]
+
+[ext_resource type="Script" path="res://scripts/cpu/interactables/canon.gd" id="1_rv14a"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mwoy7"]
+
+[node name="Canon" type="MeshInstance3D"]
+transform = Transform3D(0.258014, 0.94893, 0.181549, -0.964966, 0.262374, 0, -0.0476337, -0.175189, 0.983382, 0, 0, 0)
+mesh = SubResource("CylinderMesh_mwoy7")
+script = ExtResource("1_rv14a")
+canon_force = 20.0
+balls_per_second = 3.0
+canonball_scale = Vector3(1, 1, 1)
