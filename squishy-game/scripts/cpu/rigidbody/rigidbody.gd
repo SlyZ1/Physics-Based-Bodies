@@ -137,9 +137,9 @@ func _integrate(dt: float) -> void:
 	restrict_lin = Vector3.ONE - restrict_lin
 	glob_acc += g * Vector3.DOWN 
 	glob_acc -= linear_damping * glob_vel / m
-	glob_acc *= restrict_lin
+	glob_acc = global_transform.basis * ((global_transform.basis.inverse() * glob_acc) * restrict_lin)
 	glob_vel += glob_acc * dt
-	glob_vel *= restrict_lin
+	glob_vel = global_transform.basis * ((global_transform.basis.inverse() * glob_vel) * restrict_lin)
 
 	global_position += glob_vel * dt
 	glob_acc *= 0
@@ -147,9 +147,9 @@ func _integrate(dt: float) -> void:
 	var restrict_ang: Vector3 = Vector3(restrict_angX, restrict_angY, restrict_angZ)
 	restrict_ang = Vector3.ONE - restrict_ang
 	glob_angular_acc += - angular_damping * glob_angular_vel / m
-	glob_angular_acc *= restrict_ang
+	glob_angular_acc = global_transform.basis * ((global_transform.basis.inverse() * glob_angular_acc) * restrict_ang)
 	glob_angular_vel += glob_angular_acc * dt
-	glob_angular_vel *= restrict_ang
+	glob_angular_vel = global_transform.basis * ((global_transform.basis.inverse() * glob_angular_vel) * restrict_ang)
 	#if glob_angular_vel.length() < 0.1: glob_angular_vel *= 0
 	if glob_angular_vel.length_squared() > 1e-6:
 		global_rotate(glob_angular_vel.normalized(), glob_angular_vel.length() * dt)

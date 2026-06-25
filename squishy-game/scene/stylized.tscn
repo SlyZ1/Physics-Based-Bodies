@@ -107,10 +107,11 @@ air_force = 15.0
 ground_friction = 4.5
 air_friction = 0.75
 
-[node name="Rotate" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy")]
+[node name="Rotate" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "move_squishy", "deform_squishy")]
 script = ExtResource("4_ald61")
 squishy = NodePath("..")
 move_squishy = NodePath("../Move")
+deform_squishy = NodePath("../Deform")
 
 [node name="Jump" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
 script = ExtResource("3_os0ga")
@@ -209,7 +210,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ilc75")
 [node name="Dynamic Colliding Objects" type="Node" parent="."]
 
 [node name="Rigidbody" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(-4.37114e-08, -4.5475, 0, 1, -1.98777e-07, 0, 0, 0, 4.37637, 2.82779, 9.83635, 44.7521)
+transform = Transform3D(4.548, -1.42109e-14, 0, 6.4631e-14, 1, 0, 0, 0, 4.37637, 2.82779, 9.83635, 44.7521)
 ground_nodes = [NodePath("../../Water")]
 m = 10.0
 k_factor = 50.0
@@ -220,7 +221,7 @@ restrict_linZ = true
 cancel_on_contact = false
 
 [node name="Rigidbody3" parent="Dynamic Colliding Objects" node_paths=PackedStringArray("ground_nodes") instance=ExtResource("8_nb1ks")]
-transform = Transform3D(-4.37114e-08, -4.5475, 0, 1, -1.98777e-07, 0, 0, 0, 4.37637, 2.82779, 9.83635, 57.762)
+transform = Transform3D(4.548, -1.42109e-14, 0, 6.4631e-14, 1, 0, 0, 0, 4.37637, 2.82779, 9.83635, 57.762)
 ground_nodes = [NodePath("../../Water")]
 m = 10.0
 k_factor = 50.0
