@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbasr41vifxby"]
+
+[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="1_d72vu"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lg146"]
+
+[node name="Rigidbody" type="MeshInstance3D" node_paths=PackedStringArray("ground_nodes")]
+transform = Transform3D(4.548, -1.42109e-14, 0, 6.4631e-14, 1, 0, 0, 0, 4.37637, 2.82779, 9.83635, 44.7521)
+mesh = SubResource("BoxMesh_lg146")
+script = ExtResource("1_d72vu")
+ground_nodes = [NodePath("")]
+g = 20.0
+m = 10.0
+k_factor = 50.0
+damping_factor = 0.394
+energy_absorption = 0.449
+linear_damping = 1.0
+angular_damping = 1.0
+friction_factor = 0.005
+restrict_linX = true
+restrict_linZ = true
+cancel_on_contact = false
+velocity_thresh = 0.1
+angular_velocity_thresh = 0.4
+sleep_delay = 0.7
