@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://dmlk2t80my8an"]
+[gd_scene load_steps=37 format=3 uid="uid://dmlk2t80my8an"]
 
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/playable-scene.gd" id="1_fbrm0"]
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_il78g"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
 [ext_resource type="Material" uid="uid://dwjv7eus5il2b" path="res://assets/materials/ground_grass_mat.tres" id="9_25y0s"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="9_mqdkq"]
+[ext_resource type="Script" path="res://scene/dash.gd" id="10_xt3vv"]
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody_visual.gd" id="12_xu6nn"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="12_y8ill"]
 [ext_resource type="ArrayMesh" uid="uid://dutha0hld51bu" path="res://assets/models/grass_blades.res" id="13_yiya2"]
@@ -170,6 +171,18 @@ camera = NodePath("../../CameraContainer")
 
 [node name="Center" type="Node3D" parent="Squish"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.00878)
+
+[node name="Dash" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
+script = ExtResource("10_xt3vv")
+intensity = 10.0
+squishy = NodePath("..")
+cam_container = NodePath("../../CameraContainer")
+ground_force = 40.0
+air_force = 15.0
+ground_friction = 4.5
+air_friction = 0.75
+
+[node name="CooldownTimer" type="Timer" parent="Squish/Dash"]
 
 [node name="Gizmos" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.186594, 5.53972, 0)
@@ -409,3 +422,5 @@ wall_thickness = 4.0
 slit_edge_angle_degrees = 0.0
 groundNode = NodePath("../../Static Colliding Objects/Ground")
 dynamicDad = NodePath("../../Dynamic Colliding Objects")
+
+[connection signal="timeout" from="Squish/Dash/CooldownTimer" to="Squish/Dash" method="_on_cooldown_timeout"]
