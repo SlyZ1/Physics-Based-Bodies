@@ -3,8 +3,8 @@ extends Object
 
 static func _extract_collider_geometry(colliders_parent: Node) -> Array:
 	var collision_object_triangles: Array
-	
-	for child in colliders_parent.get_children():
+	var children = colliders_parent.find_children("*", "", true, false)
+	for child in children:
 		var triangles: Array = []
 		if child is MeshInstance3D and child.mesh:
 			var rb: Rigidbody = null
