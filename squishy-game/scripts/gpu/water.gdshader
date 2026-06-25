@@ -55,7 +55,7 @@ void fragment() {
 	vec3 depthColor = mix(near, farColor, realDepth);
 	depthColor = mix(depthColor, screenColor, transparency);
 	
-	bool depth_test = realDepth < 0.2;
+	bool depth_test = realDepth < 0.1;
 	bool foam_test = texture(foam_tex, uv * 2.0 + vec2(TIME * 0.01)).r > 0.88;
 	if (depth_test || foam_test){
 		depthColor = vec3(1.0);

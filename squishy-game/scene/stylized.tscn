@@ -76,7 +76,7 @@ albedo_color = Color(0.4686, 0.52283, 0.66, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_5e0yc"]
 
-[node name="SimpleSquishy" type="Node3D"]
+[node name="SimpleSquishy2" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]

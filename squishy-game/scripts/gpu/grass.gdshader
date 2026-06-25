@@ -38,15 +38,14 @@ void vertex() {
 			VERTEX += vec3(1,0,1) * 0.5 * noiseLevel * (1.0 - UV.y);
 			vec3 colorNoise = texture(noise, worldPos.xz / noiseScale).rgb;
 			VERTEX = vec3(VERTEX.x, VERTEX.y * (0.5 + colorNoise.r * 2.0), VERTEX.z);
+			
+			// PLAYER OFFSETTING
+			float reductionFactor = (1.0 - UV.y) / (1.0 + 8.0 * pow(length(playerOffset), 4));
+			VERTEX = VERTEX * vec3(1,1.0-reductionFactor,1);
+			vec3 localOffset = (inverse(MODEL_MATRIX) * vec4(vec3(playerOffset.x, 0.0, playerOffset.z), 0.0)).xyz;
+			VERTEX = VERTEX + normalize(localOffset) * reductionFactor * 2.0;
 		}
-		
-		// PLAYER OFFSETTING
-		float reductionFactor = (1.0 - UV.y) / (1.0 + 8.0 * pow(length(playerOffset), 4));
-		VERTEX = VERTEX * vec3(1,1.0-reductionFactor,1);
-		vec3 localOffset = (inverse(MODEL_MATRIX) * vec4(vec3(playerOffset.x, 0.0, playerOffset.z), 0.0)).xyz;
-		VERTEX = VERTEX + normalize(localOffset) * reductionFactor * 2.0;
 		//VERTEX += normalize(vec3(dirToPlayer.x, 0.0, dirToPlayer.y)) * exp(-2.0 * distToPlayer * distToPlayer) * (1.0 - UV.y);
-		
 	}
 	worldPos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
