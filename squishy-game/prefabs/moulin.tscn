@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://6857yy2q5lfa"]
+[gd_scene load_steps=5 format=3 uid="uid://cqtofuamtb6r4"]
 
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="1_xvjkv"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="1_yjc50"]
@@ -6,12 +6,12 @@
 
 [sub_resource type="BoxMesh" id="BoxMesh_lg146"]
 
-[node name="Moulin" type="Node" node_paths=PackedStringArray("parent")]
+[node name="Moulin" type="Node3D" node_paths=PackedStringArray("child")]
 script = ExtResource("2_ua7f4")
-parent = NodePath("helice1")
+child = NodePath("helice1")
 
 [node name="helice1" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.529164, 0, 0, 0, 10.024, 0, 0, 0, 3, 0.547858, 5.89561, 3.12349)
+transform = Transform3D(0.529164, 0, 0, 0, 10.024, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("BoxMesh_lg146")
 skeleton = NodePath("../..")
 script = ExtResource("1_xvjkv")
