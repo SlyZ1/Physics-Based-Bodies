@@ -311,7 +311,25 @@ skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
 
 [node name="Cube3" type="MeshInstance3D" parent="Static Colliding Objects"]
-transform = Transform3D(-9.90509, 1.37445, 6.0079e-08, 0, -4.37114e-07, 10, 1.37445, 9.90509, 4.32965e-07, -0.451231, 3.0618, -26.8829)
+transform = Transform3D(-9.97764, 1.89969, 2.65547e-08, 0, -1.2425e-06, 9.09, 0.668317, 28.3614, 3.96448e-07, -0.451231, 3.0618, -37.6181)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube15" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(5.1967, -1.85903, -4.80143e-08, -3.65727e-15, -1.43955e-06, 19.459, -0.293817, -32.8805, -8.49224e-07, -5.49988, 7.50109, -40.2537)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube16" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(5.1967, -1.85903, -4.80143e-08, -3.65727e-15, -1.43955e-06, 19.459, -0.293817, -32.8805, -8.49224e-07, 4.32788, 7.50109, -40.2537)
+mesh = SubResource("BoxMesh_wkq7k")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
+
+[node name="Cube17" type="MeshInstance3D" parent="Static Colliding Objects"]
+transform = Transform3D(-9.97764, 1.89969, 2.65547e-08, 0, -1.2425e-06, 9.09, 0.668317, 28.3614, 3.96448e-07, -0.451231, 15.4448, -37.6181)
 mesh = SubResource("BoxMesh_wkq7k")
 skeleton = NodePath("../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
@@ -364,22 +382,6 @@ script = ExtResource("7_4onsn")
 spring_intensity = 30.0
 distance_threshold = 1.0
 
-[node name="Spring4" type="MeshInstance3D" parent="Interactables"]
-transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, 9.33032, -23.4045)
-mesh = SubResource("CylinderMesh_u24r5")
-skeleton = NodePath("../..")
-script = ExtResource("7_4onsn")
-spring_intensity = 20.0
-distance_threshold = 1.0
-
-[node name="Spring5" type="MeshInstance3D" parent="Interactables"]
-transform = Transform3D(1, 0, 0, 0, 0.0673413, -0.739267, 0, 0.0739267, 0.673413, 0, 14.5948, -16.8547)
-mesh = SubResource("CylinderMesh_u24r5")
-skeleton = NodePath("../..")
-script = ExtResource("7_4onsn")
-spring_intensity = 20.0
-distance_threshold = 1.0
-
 [node name="Booster" type="MeshInstance3D" parent="Interactables"]
 transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, -0.2805, -6.87251)
 mesh = SubResource("CylinderMesh_u24r5")
@@ -395,7 +397,7 @@ multimesh = SubResource("MultiMesh_fp22y")
 multimesh = SubResource("MultiMesh_t0qgt")
 
 [node name="FinishFlag" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.591969, -0.0821428, 0.0829298, 0.0829299, 0.597641, -2.50344e-10, -0.0821428, 0.0113983, 0.597641, -0.33877, -7.63213, -27.5625)
+transform = Transform3D(0.591969, -0.0821428, 0.0829298, 0.0829299, 0.597641, -2.50344e-10, -0.0821428, 0.0113983, 0.597641, -0.33877, -7.63213, -51.2615)
 mesh = SubResource("BoxMesh_wkq7k")
 skeleton = NodePath("../Static Colliding Objects")
 surface_material_override/0 = SubResource("StandardMaterial3D_d3xsv")
@@ -410,16 +412,16 @@ groundNode = NodePath("../../Static Colliding Objects/Ground")
 dynamicDad = NodePath("../../Dynamic Colliding Objects")
 
 [node name="Wall generator" type="MeshInstance3D" parent="Decor" node_paths=PackedStringArray("groundNode", "dynamicDad")]
-transform = Transform3D(0.1433, 1.74872, -1.40283e-08, -3.08716e-15, -7.6932e-08, -0.323, -1.25988, 0.198902, -1.59561e-09, -7.448, 0, -2.7)
+transform = Transform3D(1.267, 0.0698639, -5.60441e-10, -4.17352e-15, -7.6932e-08, -0.323, -0.0503346, 1.75861, -1.41076e-08, -0.956681, 8.57676, -47.7052)
 mesh = SubResource("PrismMesh_sy01y")
 script = ExtResource("20_2sh1b")
-walls_per_second = 0.1
+walls_per_second = 0.15
 slit_width = 0.3
-wall_speed = 5.0
-wall_width = 3.0
-wall_height = 3.0
-wall_thickness = 4.0
-slit_edge_angle_degrees = 0.0
+travel_distance = 20.0
+wall_speed = 7.0
+wall_width = 4.5
+wall_height = 2.25
+wall_thickness = 3.5
 groundNode = NodePath("../../Static Colliding Objects/Ground")
 dynamicDad = NodePath("../../Dynamic Colliding Objects")
 
