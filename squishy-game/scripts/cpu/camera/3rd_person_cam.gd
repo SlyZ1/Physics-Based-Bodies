@@ -14,8 +14,14 @@ func _ready() -> void:
 
 func _follow_target(delta: float):
 	camera.position = Vector3(0, 0, distance)
+	var y: float = global_position.y - 0.8 - camera.global_position.y
+	if y > 0:
+		var cos_theta: float = global_basis.z.dot(Vector3.DOWN)
+		camera.position -= Vector3(0, 0, y / cos_theta)
+		camera.position.z = max(camera.position.z, distance / 5)
+	
 	var t: float = clamp(delta * 50 / target_damp, 0, 1)
-	target_pos = target_pos.lerp(target.global_position, t)
+	target_pos = target_pos.lerp(target.global_position + Vector3.UP, t)
 	global_position = target_pos
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -30,7 +36,7 @@ var glob_rot: Vector2
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		glob_rot.x -= sensibility * event.relative.y
-		glob_rot.x = clamp(glob_rot.x, -PI/2 * 0.9, -PI/2 * 0.1)
+		glob_rot.x = clamp(glob_rot.x, -PI/2 * 0.9, PI/2 * 0.5)
 		glob_rot.y -= sensibility * event.relative.x
 		rotation.x = glob_rot.x
 		rotation.y = glob_rot.y

@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://d07u1a3hbosy"]
+
+[ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="1_hqagw"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_u24r5"]
+
+[node name="Spring2" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, 5.0024, -4.14283)
+mesh = SubResource("CylinderMesh_u24r5")
+skeleton = NodePath("../..")
+script = ExtResource("1_hqagw")
+spring_intensity = 20.0
+distance_threshold = 1.0
