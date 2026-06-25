@@ -273,6 +273,8 @@ height = 0.15
 radial_segments = 5
 rings = 5
 
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_nmu6i"]
+
 [sub_resource type="BoxMesh" id="BoxMesh_ert6v"]
 
 [node name="SimpleSquishy" type="Node3D" node_paths=PackedStringArray("end_checkpoint", "checkpoint_parent", "squishy")]
@@ -893,6 +895,14 @@ spring_intensity = 30.0
 distance_threshold = 3.0
 
 [node name="Checkpoints" type="Node" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.69495, 26.0454, 50.5927)
+mesh = SubResource("CapsuleMesh_nmu6i")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0324936, 13.9924, 28.4945)
+mesh = SubResource("CapsuleMesh_nmu6i")
 
 [node name="EndCheckpoint" type="MeshInstance3D" parent="Checkpoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.1031, 37.776, 114.546)

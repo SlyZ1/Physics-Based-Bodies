@@ -107,7 +107,9 @@ func get_vertex_in_dir(dir: Vector3) -> int:
 			if best_dot > 0.99: break
 	return index
 	
+# Teleport to global space
 func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
+	new_pos = global_transform.inverse() * new_pos
 	if reset_vel_acc:
 		glob_acc *= 0
 		glob_vel *= 0
