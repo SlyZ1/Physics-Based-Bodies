@@ -17,6 +17,11 @@ func _ready() -> void :
 	await squishy.ready
 	vertices = squishy.get_pos()
 	N = vertices.size()
+	squishy.teleported.connect(_on_squishy_teleported)
+	
+func _on_squishy_teleported() -> void:
+	vertices = squishy.get_pos()
+	N = vertices.size()
 
 func flatten_field(normal: Vector3, axis: Vector3) -> Vector3:
 	var n = normal.normalized()
@@ -39,7 +44,6 @@ func flatten_field(normal: Vector3, axis: Vector3) -> Vector3:
 func _process(dt: float) -> void:		
 	for i in range(N):
 		var v = (vertices[i] - squishy.get_local_real_center()).normalized()
-
 		var acc_dir = Vector3.ZERO
 		if horz_flatten:
 			acc_dir += flatten_field(v, Vector3.UP)

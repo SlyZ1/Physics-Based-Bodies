@@ -58,6 +58,8 @@ var dynamic_collision_BVH: BoundingSphereTree.SphereNode
 var bounce_force: Vector3
 static var core: Squishy
 
+signal teleported
+
 func add_glob_acc(acc: Vector3) -> void:
 	glob_acc += acc
 	
@@ -116,6 +118,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	pos = anchor_point_arr.duplicate()
 	squeleton_center = new_pos
 	pos_center = new_pos
+	teleported.emit()
 	
 func get_local_basis(up_vec: Vector3) -> Basis:
 	var up: Vector3 = Vector3.UP if up_vec.length() < 1e-8 else up_vec
