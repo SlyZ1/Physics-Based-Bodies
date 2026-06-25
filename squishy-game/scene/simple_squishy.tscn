@@ -8,7 +8,6 @@
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
-[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_l32nw"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="6_sin7b"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]

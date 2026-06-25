@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://dop11cw0bg21o"]
+[gd_scene load_steps=25 format=3 uid="uid://dop11cw0bg21o"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_0bkt2"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="1_idfrl"]
@@ -6,7 +6,6 @@
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="3_os0ga"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/rotate_from_cam_squishy.gd" id="4_ald61"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_i4hvv"]
-[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_d3q0l"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="6_i7ije"]
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="7_getm2"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="8_nb1ks"]
@@ -125,11 +124,6 @@ jump_buffer_time = 0.1
 script = ExtResource("4_i4hvv")
 squishy = NodePath("..")
 cam_container = NodePath("../../CameraContainer")
-
-[node name="Fall" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
-script = ExtResource("5_d3q0l")
-squishy = NodePath("..")
-min_height = -10.0
 
 [node name="UpdateGrass" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "camera")]
 script = ExtResource("6_i7ije")

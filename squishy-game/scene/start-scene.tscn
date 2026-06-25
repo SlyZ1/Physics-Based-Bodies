@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://da2mqquqxbtq3"]
+[gd_scene load_steps=5 format=3 uid="uid://da2mqquqxbtq3"]
 
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/start_scene.gd" id="1_xid85"]
 [ext_resource type="Theme" uid="uid://ctctbitpktysw" path="res://theme/simple_squishy.tres" id="2_7fuv4"]
+[ext_resource type="PackedScene" uid="uid://dmlk2t80my8an" path="res://scene/simple_squishy.tscn" id="2_och83"]
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/restart-button.gd" id="3_obxjw"]
 
-[node name="Start-scene" type="Control" node_paths=PackedStringArray("timer", "levelcompleted", "levelcompletedbutton")]
+[node name="Start-scene" type="Control" node_paths=PackedStringArray("timer", "levelcompleted", "levelcompletedbutton", "cp_label")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,8 +17,24 @@ script = ExtResource("1_xid85")
 timer = NodePath("CanvasLayer/LabelTimer")
 levelcompleted = NodePath("CanvasLayer/LevelCompleted")
 levelcompletedbutton = NodePath("CanvasLayer/LevelCompleted/Button")
+level = ExtResource("2_och83")
+cp_label = NodePath("CanvasLayer/CPLabel")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CPLabel" type="Label" parent="CanvasLayer"]
+layout_direction = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -502.0
+offset_top = 70.0
+offset_right = -68.0
+offset_bottom = 117.0
+grow_horizontal = 0
+theme = ExtResource("2_7fuv4")
+text = "Checkpoint Passed"
+horizontal_alignment = 2
 
 [node name="LabelTimer" type="Label" parent="CanvasLayer"]
 layout_direction = 1
