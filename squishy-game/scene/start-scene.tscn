@@ -1,8 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://da2mqquqxbtq3"]
+[gd_scene load_steps=5 format=3 uid="uid://syfybb7gbj07"]
 
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/start_scene.gd" id="1_xid85"]
+[ext_resource type="PackedScene" uid="uid://t1uhnsq1gqx1" path="res://scene/level_0.tscn" id="2_1jb45"]
 [ext_resource type="Theme" uid="uid://ctctbitpktysw" path="res://theme/simple_squishy.tres" id="2_7fuv4"]
-[ext_resource type="PackedScene" uid="uid://dmlk2t80my8an" path="res://scene/simple_squishy.tscn" id="2_och83"]
 [ext_resource type="Script" path="res://scripts/cpu/gameloop/restart-button.gd" id="3_obxjw"]
 
 [node name="Start-scene" type="Control" node_paths=PackedStringArray("timer", "levelcompleted", "levelcompletedbutton", "cp_label")]
@@ -17,7 +17,7 @@ script = ExtResource("1_xid85")
 timer = NodePath("CanvasLayer/LabelTimer")
 levelcompleted = NodePath("CanvasLayer/LevelCompleted")
 levelcompletedbutton = NodePath("CanvasLayer/LevelCompleted/Button")
-level = ExtResource("2_och83")
+level = ExtResource("2_1jb45")
 cp_label = NodePath("CanvasLayer/CPLabel")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

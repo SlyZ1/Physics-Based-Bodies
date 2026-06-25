@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="4_8bwax"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="4_80gtl"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="4_yyrdy"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="5_l32nw"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="6_sin7b"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/spring.gd" id="7_4onsn"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
@@ -19,7 +20,7 @@
 [ext_resource type="ArrayMesh" uid="uid://dutha0hld51bu" path="res://assets/models/grass_blades.res" id="13_yiya2"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="16_7gptc"]
 [ext_resource type="PackedScene" uid="uid://o73wc3pegl3n" path="res://prefabs/air_particles.tscn" id="17_fhkfg"]
-[ext_resource type="PackedScene" uid="uid://dvxw60y54soif" path="res://prefabs/canon.tscn" id="19_wju7i"]
+[ext_resource type="PackedScene" path="res://prefabs/canon.tscn" id="19_wju7i"]
 [ext_resource type="Script" path="res://scripts/cpu/interactables/wall_generator.gd" id="20_2sh1b"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vyorq"]
@@ -103,11 +104,9 @@ buffer = PackedFloat32Array(0.29492, -0.10794, -0.44857, 1.91087, -0.12416, 0.49
 
 [sub_resource type="PrismMesh" id="PrismMesh_sy01y"]
 
-[node name="SimpleSquishy" type="Node3D" node_paths=PackedStringArray("squishy_object", "end_flag")]
+[node name="SimpleSquishy2" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
 script = ExtResource("1_fbrm0")
-squishy_object = NodePath("Squish/Center")
-end_flag = NodePath("FinishFlag")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)

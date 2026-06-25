@@ -1,12 +1,12 @@
-[gd_scene load_steps=65 format=3 uid="uid://t1uhnsq1gqx1"]
+[gd_scene load_steps=66 format=3 uid="uid://t1uhnsq1gqx1"]
 
 [ext_resource type="ArrayMesh" uid="uid://5rhy07en8wxn" path="res://assets/models/squishy.res" id="1_j0w81"]
+[ext_resource type="Script" path="res://scripts/cpu/gameloop/playable-scene.gd" id="1_xxtcf"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/simple_squishy.gd" id="2_x5nh1"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/move_squishy.gd" id="3_6l7qw"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/rotate_from_cam_squishy.gd" id="4_qa7dr"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/jump_squishy.gd" id="5_mkqtv"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/deform_squishy.gd" id="6_fgciw"]
-[ext_resource type="Script" path="res://scripts/cpu/squish_body/fall_squishy.gd" id="7_1apk8"]
 [ext_resource type="Script" path="res://scripts/cpu/squish_body/update_grass_squishy.gd" id="8_wheio"]
 [ext_resource type="Script" path="res://scripts/cpu/camera/3rd_person_cam.gd" id="9_bw4ck"]
 [ext_resource type="Material" uid="uid://dwjv7eus5il2b" path="res://assets/materials/ground_grass_mat.tres" id="10_gg5ui"]
@@ -254,8 +254,15 @@ height = 0.15
 radial_segments = 5
 rings = 5
 
-[node name="SimpleSquishy" type="Node3D"]
+[sub_resource type="BoxMesh" id="BoxMesh_ert6v"]
+
+[node name="SimpleSquishy" type="Node3D" node_paths=PackedStringArray("end_checkpoint", "checkpoint_parent", "squishy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.1471, 0)
+script = ExtResource("1_xxtcf")
+end_checkpoint = NodePath("Checkpoints/EndCheckpoint")
+checkpoint_parent = NodePath("Checkpoints")
+squishy = NodePath("Squish")
+min_height = -10.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
@@ -303,11 +310,6 @@ jump_buffer_time = 0.1
 script = ExtResource("6_fgciw")
 squishy = NodePath("..")
 cam_container = NodePath("../../CameraContainer")
-
-[node name="Fall" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
-script = ExtResource("7_1apk8")
-squishy = NodePath("..")
-min_height = -10.0
 
 [node name="UpdateGrass" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "camera")]
 script = ExtResource("8_wheio")
@@ -735,3 +737,9 @@ transform = Transform3D(3.12369, 0.715694, -0.797636, -3.73336, 0.615153, 0, 0.5
 skeleton = NodePath("..")
 spring_intensity = 30.0
 distance_threshold = 3.0
+
+[node name="Checkpoints" type="Node" parent="."]
+
+[node name="EndCheckpoint" type="MeshInstance3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.1031, 37.776, 114.546)
+mesh = SubResource("BoxMesh_ert6v")
