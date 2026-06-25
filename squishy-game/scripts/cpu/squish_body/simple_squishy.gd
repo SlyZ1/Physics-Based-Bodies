@@ -48,6 +48,7 @@ var mean_collision_normal: Vector3
 var mean_penetration: float
 var collision_dir: Vector3 = Vector3.UP
 var is_colliding: bool
+var is_teleporting: bool = false
 
 var anchor_vel: Vector3
 var squeleton: Array[Node3D] = []
@@ -118,6 +119,7 @@ func teleport(new_pos: Vector3, reset_vel_acc: bool = true):
 	pos = anchor_point_arr.duplicate()
 	squeleton_center = new_pos
 	pos_center = new_pos
+	is_teleporting = true
 	teleported.emit()
 	
 func get_local_basis(up_vec: Vector3) -> Basis:
@@ -243,6 +245,8 @@ func _integrate(dt: float) -> void:
 	glob_acc *= 0
 
 func _collide(dt: float, old_center: Vector3) -> void:
+	if is_teleporting:
+		return
 	dynamic_collision_BVH = MeshCollisions.create_collision_BVH_object(dynamic_colliders_parent)
 
 	var new_center = MeshUtils.get_center(pos)
@@ -390,6 +394,7 @@ func _physics(dt: float) -> void:
 	_collide(dt, test)
 	_recenter(old_center)
 	old_pos = pos.duplicate()
+	is_teleporting = false
 	
 func _refresh_mesh() -> void:
 	var vertices = MeshSmoother.smooth_mesh(pos, neighbours["neighbours"], smooth_factor)
