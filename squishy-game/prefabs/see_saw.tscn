@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://b0mrjl01b2qyp"]
+
+[ext_resource type="Script" path="res://scene/see_saw.gd" id="1_3u7de"]
+[ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="2_6xwd7"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lg146"]
+
+[node name="SeeSaw" type="Node3D" node_paths=PackedStringArray("child")]
+script = ExtResource("1_3u7de")
+child = NodePath("Board")
+
+[node name="Board" type="MeshInstance3D" parent="."]
+transform = Transform3D(-2.31305e-08, -10.024, 0, 0.529164, -4.38163e-07, 0, 0, 0, 3, 8.25322e-07, 3.34602, 7.56739)
+mesh = SubResource("BoxMesh_lg146")
+skeleton = NodePath("")
+script = ExtResource("2_6xwd7")
+m = 200.0
+restrict_linX = true
+restrict_linY = true
+restrict_linZ = true
+restrict_angX = true
+restrict_angY = true
