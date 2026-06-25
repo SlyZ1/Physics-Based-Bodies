@@ -336,10 +336,10 @@ func _collide(dt: float, old_center: Vector3) -> void:
 				# Apply impact
 				collided_rb = best_hit_rb
 				best_hit_rb.add_impact(global_transform * pos[i], global_transform.basis * impact_force, true)
-	#if glob_vel.dot(total_rebound_force.normalized()) < max_velocity:
-	glob_vel += total_rebound_force
-	for i in range(N):
-		pos[i] += moving_compensation
+	if glob_vel.dot(total_rebound_force.normalized()) < max_velocity:
+		glob_vel += total_rebound_force
+	#for i in range(N):
+		#pos[i] += moving_compensation
 
 	collision_dir /= N
 	if is_colliding && new_collision_dir.length() > 1e-2:
