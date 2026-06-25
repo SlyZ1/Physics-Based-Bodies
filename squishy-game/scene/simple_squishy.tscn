@@ -14,7 +14,7 @@
 [ext_resource type="Script" path="res://scripts/cpu/interactables/booster.gd" id="8_wnw85"]
 [ext_resource type="Material" uid="uid://dwjv7eus5il2b" path="res://assets/materials/ground_grass_mat.tres" id="9_25y0s"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="9_mqdkq"]
-[ext_resource type="Script" path="res://scene/dash.gd" id="10_xt3vv"]
+[ext_resource type="Script" path="res://scripts/cpu/squish_body/dash.gd" id="10_xt3vv"]
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody_visual.gd" id="12_xu6nn"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="12_y8ill"]
 [ext_resource type="ArrayMesh" uid="uid://dutha0hld51bu" path="res://assets/models/grass_blades.res" id="13_yiya2"]
