@@ -1,0 +1,7 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://ctctbitpktysw"]
+
+[ext_resource type="FontFile" uid="uid://dgmbfqi4boxjf" path="res://assets/gui/singsong/Singsong.otf" id="1_kbnw2"]
+
+[resource]
+default_font = ExtResource("1_kbnw2")
+default_font_size = 38
