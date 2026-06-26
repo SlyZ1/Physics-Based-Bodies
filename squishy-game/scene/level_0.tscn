@@ -369,7 +369,7 @@ end_checkpoint = NodePath("Checkpoints/EndCheckpoint")
 checkpoint_parent = NodePath("Checkpoints")
 squishy = NodePath("Squish")
 min_height = -10.0
-checkpoint_distance = 10.0
+checkpoint_distance = 1.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
@@ -379,7 +379,7 @@ shadow_enabled = true
 environment = SubResource("Environment_8t5m8")
 
 [node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("static_colliders_parent", "dynamic_colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.81763, 0.33683)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.6405, 60.9134, 66.9813)
 mesh = ExtResource("1_j0w81")
 script = ExtResource("2_x5nh1")
 static_colliders_parent = NodePath("../Static Colliding Objects")
@@ -1312,4 +1312,5 @@ transform = Transform3D(4.518, 0, 0, 0, 1.152, 0, 0, 0, 3.232, 40.1457, 17.4439,
 [node name="Spring3" parent="." instance=ExtResource("14_05ote")]
 transform = Transform3D(5.89548, 0, 0, 0, 0.589548, 0, 0, 0, 5.89548, 65.1785, 27.5465, 62.5094)
 surface_material_override/0 = SubResource("StandardMaterial3D_qeaox")
-spring_intensity = 35.0
+spring_intensity = 30.0
+distance_threshold = 3.0

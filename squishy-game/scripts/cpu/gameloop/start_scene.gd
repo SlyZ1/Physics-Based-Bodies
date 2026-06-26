@@ -48,4 +48,4 @@ func _process(delta: float) -> void:
 		
 	if game_runing:
 		game_time += delta
-		timer.text = "Time ellapsed: " + str(int(game_time/60)) + ": " + str(int(game_time)%60)
+		timer.text = str(int(game_time/60)).pad_zeros(2) + " : " + str(int(game_time)%60).pad_zeros(2)
