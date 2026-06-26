@@ -1,71 +1,65 @@
-# Physics-Based-Bodies
+# Squishing Over It
 
-Platformer game on Godot 4.3 that plays with the physics of squishy bodies.
+Real-time soft-body / rigid-body physics platformer, built on Godot 4.3.
 
-## `simple_squishy.gd`
-### Quick explanation
----
+A low-poly 3D puzzle-platformer where the player controls a deformable jelly sphere navigating physics-driven obstacles. Built as a testbed for real-time soft-body simulation interacting with rigid dynamics, targeting stability and playability over physical accuracy.
 
-This script is responsible for handling all the forces applied to the main character.
+Authors: Baptiste Girardin, Colin Marmond, Elyes Jemel, Édouard Vivares — IGR course, Télécom Paris, June 2026.
 
-To make the body look "squishy", we used a spring based soft body along with an Euler integrator. For each vertices, 2 springs are assigned:
-- <b>One linked to a default position</b>, to make sure the shape is relatively conserved 
-- <b>One linked to the center</b>, to make sure a certain radius is maintained, ensuring a simple volume conservation
+## Physics engine
 
-The real positions of the vertices are separated from the positions of the "squeleton" (the default positions mentionned above). \
-_The squeleton is in fact just a normal sphere whitout deformations_
+Both the soft- and rigid-body solvers use semi-implicit (symplectic) Euler integration, chosen for its stability/simplicity trade-off in real time.
 
-The positions of the squeleton are only affected by the real positions during collisions to recalculate the center of the mesh.
+**Soft body.** The character is a custom mass-spring system on a geodesic-sphere mesh, not a physically accurate solver. Each vertex is held in place by two springs: one pulling it back toward its rest position on an undeformed reference sphere (shape recovery), and one pulling it toward the object's center at a fixed radius (a rough stand-in for volume conservation). Global motion (the object moving through the world) and local motion (the mesh deforming on impact) are integrated separately and only reconciled during collisions — this separation is what keeps the simulation stable instead of diverging on impact. A few corrective terms are layered on top: one to cancel out the extra energy bounces would otherwise add, one to make wall collisions stiffer than ground collisions (so the player can't squeeze through gaps), and one that nudges the rest radius per-vertex to fake volume conservation under heavy deformation.
 
-### Controls for debug purposes
-`G` : Toggle gizmos \
-`P` : Pause the simulation
+**Rigid body.** Limited to box shapes resting on infinite planes, which keeps the inertia tensor simple and avoids edge-on-edge collision cases entirely. Penetration is resolved with soft constraints — modeling the correction as a damped spring rather than snapping objects apart instantly — which removes the jittering typical of instant depenetration. Contact response otherwise follows the standard impulse-based approach (linear + angular velocity update from a single impulse at the contact point).
 
-### How to use
----
+**Soft–rigid coupling.** The soft body bounces off rigid bodies as if they were momentarily static, while each contacting vertex pushes back on the rigid body with an impulse scaled by both masses. A small velocity-based offset is added to stop the soft body from passing through a rigid body that's moving toward it.
 
-#### Usage Example
-```gdscript
-class_name MoveSquishy
-extends Node
+**Collision detection.** Each vertex's collision is found by tracing a line segment from its last position to its newly integrated position and checking it against the level's triangles. To avoid testing every vertex against every triangle in the scene, a single bounding sphere around the whole character (rather than a full spatial hierarchy like a BVH) is used as a cheap first filter — sufficient here since there's only one moving soft body.
 
-@export var squishy: Squishy #reference of simple_squishy.gd in the scene
+Full derivations (force/impulse formulas, soft-constraint feedback terms, volume-correction math) are in `papers/Report.pdf`.
 
-@export var move_speed: float = 10
+## Repository layout
 
-func _process(dt: float) -> void:
-    if Input.is_key_pressed(KEY_Z):
-        squishy.add_glob_acc(Vector3.FORWARD * move_speed)
+```
+squishy-game/   Godot 4.3 project (scenes, scripts, shaders)
+assets/         models, textures
+footage/        captures
+papers/         Report.pdf (technical writeup)
 ```
 
-> [!WARNING]
-> Please do not modify any variable or use any function of the script that are not mentionned below, in order to prevent from unwanted behaviors
-#### Public methods:
+## Core scripts
 
-- `add_glob_acc(acc: Vector3) -> void` : add an acceleration to the squeleton
-- `add_glob_vel(vel: Vector3) -> void` : add a velocity to the squeleton
-- `add_loc_acc(acc: Vector3, i: int) -> void` : add an acceleration to the number `i` vertex
-- `add_loc_vel(vel: Vector3, i: int) -> void` : add a velocity to the number `i` vertex
-- `teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void` : teleport the center of the squeleton <b>and</b> real 
-positions to `new_pos`. Resets all the velocities and accelerations if `reset_vel_acc` is `true`
-- `get_squeleton_center() -> Vector3` : Get the center of the squeleton
-- `get_real_center() -> Vector3` : Get the real center
-- `get_vertex_in_dir(dir: Vector3) -> int` : Get the vertex index of the deformed body that is in the direction `dir` in regards to the real center
-- `get_local_basis() -> Basis` : Get the basis with the mean collision normal as the up vector, and looking at the direction of the camera. If `is_colliding` is false, the up vector is `Vector3.UP`
+**`simple_squishy.gd`** — soft-body solver and character state. Public surface:
 
-#### Public variables:
+```gdscript
+add_glob_acc(acc: Vector3) -> void
+add_glob_vel(vel: Vector3) -> void
+add_loc_acc(acc: Vector3, i: int) -> void
+add_loc_vel(vel: Vector3, i: int) -> void
+teleport(new_pos: Vector3, reset_vel_acc: bool = true) -> void
+get_squeleton_center() -> Vector3
+get_real_center() -> Vector3
+get_vertex_in_dir(dir: Vector3) -> int
+get_local_basis() -> Basis
+```
+Read-only state: `N`, `radius`, `is_colliding`, `glob_acc`, `glob_vel`.
+Debug: `G` toggles gizmos, `P` pauses simulation.
 
-- `N` : RO, number of vertices
-- `radius` : RO, radius of the sphere
-- `is_colliding` : RO, whether the body collides with something or not
-- `glob_acc` : RO, acceleration of the squeleton
-- `glob_vel` : RO, velocity of the squeleton
+**`mesh_utils.gd`** — mesh utilities: `create_icosphere`, `compute_neighbors`, `set_vertices`, `smooth_mesh`.
 
+## Build
 
-## `mesh_utils.gd`
+Requires Godot 4.3.
 
-Most useful functions:
-- `smooth_mesh(mesh: Mesh, vertices: PackedVector3Array, neighbours: Array, factor: float) -> PackedVector3Array` : Smoothes a given mesh by a [0,1] factor.
-- `set_vertices(mesh: Mesh, vertices: PackedVector3Array) -> ArrayMesh` : Changes the positions of the vertices of `mesh`.
-- `compute_neighbors(mesh: Mesh) -> Array`: Gives an array of the neighbours for each vertices.
-- `create_icosphere(r: float, subs: int) -> ArrayMesh` : Creates an icosphere.
+```bash
+git clone https://github.com/SlyZ1/Physics-Based-Bodies.git
+```
+Open `squishy-game/` as a Godot project and run.
+
+## Known limitations
+
+- Dynamic-object collision occasionally tunnels under fast relative motion.
+- Broad-phase / narrow-phase not optimized for low-end targets or low tick rates.
+- Single-level prototype; no production content pipeline.
