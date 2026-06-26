@@ -13,7 +13,7 @@
 [ext_resource type="Material" uid="uid://dwjv7eus5il2b" path="res://assets/materials/ground_grass_mat.tres" id="10_gg5ui"]
 [ext_resource type="PackedScene" uid="uid://21ejw5mp0xmm" path="res://prefabs/default_rigidbody.tscn" id="10_hfwvh"]
 [ext_resource type="PackedScene" uid="uid://bkygtkewliur1" path="res://prefabs/speed_lines.tscn" id="10_lbcq1"]
-[ext_resource type="Material" path="res://assets/materials/rock.tres" id="10_o348n"]
+[ext_resource type="Material" uid="uid://dr3mcwf6sfd1l" path="res://assets/materials/rock.tres" id="10_o348n"]
 [ext_resource type="PackedScene" uid="uid://cqtofuamtb6r4" path="res://prefabs/moulin.tscn" id="11_pphrx"]
 [ext_resource type="PackedScene" uid="uid://boos6pn8obxrv" path="res://prefabs/grass.tscn" id="12_41vv2"]
 [ext_resource type="PackedScene" uid="uid://o73wc3pegl3n" path="res://prefabs/air_particles.tscn" id="12_mcyqo"]
@@ -21,9 +21,9 @@
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/rigidbody.gd" id="13_72w30"]
 [ext_resource type="PackedScene" uid="uid://dbasr41vifxby" path="res://prefabs/water_platform.tscn" id="13_et4k2"]
 [ext_resource type="PackedScene" uid="uid://cn8kt01q11bvf" path="res://prefabs/light_grass.tscn" id="13_ogmfq"]
-[ext_resource type="PackedScene" uid="uid://dvxw60y54soif" path="res://prefabs/canon.tscn" id="14_2dwqg"]
+[ext_resource type="PackedScene" path="res://prefabs/canon.tscn" id="14_2dwqg"]
 [ext_resource type="Material" uid="uid://c3khyx5qg7fma" path="res://assets/materials/water.tres" id="14_4hmxa"]
-[ext_resource type="PackedScene" path="res://prefabs/spring.tscn" id="14_05ote"]
+[ext_resource type="PackedScene" uid="uid://d07u1a3hbosy" path="res://prefabs/spring.tscn" id="14_05ote"]
 [ext_resource type="Script" path="res://scripts/cpu/rigidbody/see_saw.gd" id="14_a75qh"]
 [ext_resource type="Shader" path="res://scripts/gpu/fog.gdshader" id="18_rf5tp"]
 
@@ -370,7 +370,7 @@ end_checkpoint = NodePath("Checkpoints/EndCheckpoint")
 checkpoint_parent = NodePath("Checkpoints")
 squishy = NodePath("Squish")
 min_height = -10.0
-checkpoint_distance = 1.0
+checkpoint_distance = 10.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.538962, 0.84233, 0, -0.84233, 0.538962, 0, 0, 0)
@@ -380,7 +380,7 @@ shadow_enabled = true
 environment = SubResource("Environment_8t5m8")
 
 [node name="Squish" type="MeshInstance3D" parent="." node_paths=PackedStringArray("static_colliders_parent", "dynamic_colliders_parent", "center_node", "center_gizmo", "gizmo1", "gizmo2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.6405, 60.9134, 66.9813)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00137234, -2.34214, -2.07041)
 mesh = ExtResource("1_j0w81")
 script = ExtResource("2_x5nh1")
 static_colliders_parent = NodePath("../Static Colliding Objects")

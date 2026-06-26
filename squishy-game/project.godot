@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="squishy game"
-run/main_scene="res://scene/simple_squishy.tscn"
-config/features=PackedStringArray("4.3", "C#", "Forward Plus")
+run/main_scene="res://scene/start-scene.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]

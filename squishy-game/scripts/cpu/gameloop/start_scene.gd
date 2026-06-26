@@ -3,7 +3,7 @@ extends Control
 @export var timer: Label
 @export var levelcompleted: Control
 @export var levelcompletedbutton: Button
-@export var level: Resource
+const level: PackedScene = preload("res://scene/level_0.tscn")
 @export var cp_label: Label
 
 var instanciated_scene: Node = null
@@ -14,15 +14,20 @@ var checkpoint_passed_timer: int = Time.get_ticks_msec() - 10000
 func _restart_everything() -> void:
 	if instanciated_scene:
 		self.remove_child(instanciated_scene)
+	
 	levelcompleted.visible = false
 	self.mouse_filter = Control.MOUSE_FILTER_PASS
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
-	instanciated_scene = level.instantiate(PackedScene.GEN_EDIT_STATE_MAIN)
+	instanciated_scene = level.instantiate()
+	timer.text = "1"
 	instanciated_scene.level_finished.connect(finished_level)
 	instanciated_scene.checkpoint_passed.connect(checkpoint_passed)
+	timer.text = "2"
 	self.add_child(instanciated_scene)
+	timer.text = "3"
 	game_runing = true
 	game_time = 0.0
+	
 
 func finished_level() -> void:
 	print("level completed")
@@ -36,6 +41,7 @@ func checkpoint_passed() -> void:
 	
 
 func _ready() -> void:
+	timer.text = "oui"
 	_restart_everything()
 	levelcompleted.visible = false
 	levelcompletedbutton.pressed.connect(_restart_everything)

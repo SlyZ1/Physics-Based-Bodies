@@ -22,7 +22,7 @@ func _process(delta: float) -> void:
 		squishy.teleport(last_CP_position)
 		return
 
-	if (squishy_center - end_checkpoint.global_position).length() < checkpoint_distance:
+	if (squishy_center - end_checkpoint.global_position).length() < 1.0 && false:
 		print("flag reached")
 		level_finished.emit()
 		set_process(false)
