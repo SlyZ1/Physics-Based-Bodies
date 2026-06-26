@@ -18,7 +18,7 @@ Both the soft- and rigid-body solvers use semi-implicit (symplectic) Euler integ
 
 **Collision detection.** Each vertex's collision is found by tracing a line segment from its last position to its newly integrated position and checking it against the level's triangles. To avoid testing every vertex against every triangle in the scene, a single bounding sphere around the whole character (rather than a full spatial hierarchy like a BVH) is used as a cheap first filter — sufficient here since there's only one moving soft body.
 
-Full derivations (force/impulse formulas, soft-constraint feedback terms, volume-correction math) are in `papers/Report.pdf`.
+Full derivations (force/impulse formulas, soft-constraint feedback terms, volume-correction math) are in `Report.pdf`.
 
 ## Repository layout
 
@@ -26,7 +26,7 @@ Full derivations (force/impulse formulas, soft-constraint feedback terms, volume
 squishy-game/   Godot 4.3 project (scenes, scripts, shaders)
 assets/         models, textures
 footage/        captures
-papers/         Report.pdf (technical writeup)
+papers/         references lookup at project beginning
 ```
 
 ## Core scripts
