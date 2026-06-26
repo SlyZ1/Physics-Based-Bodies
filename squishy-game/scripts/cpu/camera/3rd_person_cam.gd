@@ -7,10 +7,12 @@ extends Node3D
 @export var sensibility: float = 1
 
 var target_pos: Vector3 = Vector3.ZERO
+var glob_rot: Vector2
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	glob_rot = Vector2(rotation.x, rotation.y)
 
 func _follow_target(delta: float):
 	camera.position = Vector3(0, 0, distance)
@@ -32,7 +34,6 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("lmb"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-var glob_rot: Vector2
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		glob_rot.x -= sensibility * event.relative.y

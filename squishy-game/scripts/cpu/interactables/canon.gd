@@ -3,8 +3,8 @@ extends MeshInstance3D
 const CANONBALL_SCENE: PackedScene = preload("res://prefabs/default_rigidbody.tscn")
 const CANONBALL_MASS: float = 1.0e12
 const SPAWN_OFFSET: float = 2.0
-const CANONBALL_LIFETIME: float = 1.0
-const SPIN_FORCE: float = 12.0
+@export var CANONBALL_LIFETIME : float = 1.0
+@export var SPIN_FORCE : float = 12.0
 
 @export var canon_force: float = 40.0
 @export var balls_per_second: float = 1.0

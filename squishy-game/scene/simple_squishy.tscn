@@ -170,15 +170,10 @@ camera = NodePath("../../CameraContainer")
 [node name="Center" type="Node3D" parent="Squish"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.00878)
 
-[node name="Dash" type="Node" parent="Squish" node_paths=PackedStringArray("squishy", "cam_container")]
+[node name="Dash" type="Node" parent="Squish" node_paths=PackedStringArray("squishy")]
 script = ExtResource("10_xt3vv")
 intensity = 10.0
 squishy = NodePath("..")
-cam_container = NodePath("../../CameraContainer")
-ground_force = 40.0
-air_force = 15.0
-ground_friction = 4.5
-air_friction = 0.75
 
 [node name="CooldownTimer" type="Timer" parent="Squish/Dash"]
 
