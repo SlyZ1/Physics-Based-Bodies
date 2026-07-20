@@ -4,19 +4,19 @@ Real-time soft-body / rigid-body physics platformer, built on Godot 4.3.
 
 A low-poly 3D puzzle-platformer where the player controls a deformable jelly sphere navigating physics-driven obstacles. Built as a testbed for real-time soft-body simulation interacting with rigid dynamics, targeting stability and playability over physical accuracy.
 
-Authors: Baptiste Girardin, Colin Marmond, Elyes Jemel, Édouard Vivares — IGR course, Télécom Paris, June 2026.
+Authors: Baptiste Girardin, Colin Marmond, Elyes Jemel, Édouard Vivares - IGR course, Télécom Paris, June 2026.
 
 ## Physics engine
 
-Both the soft- and rigid-body solvers use semi-implicit (symplectic) Euler integration, chosen for its stability/simplicity trade-off in real time.
+Both the soft- and rigid-body solvers use semi-implicit Euler integration, chosen for its stability/simplicity trade-off in real time.
 
-**Soft body.** The character is a custom mass-spring system on a geodesic-sphere mesh, not a physically accurate solver. Each vertex is held in place by two springs: one pulling it back toward its rest position on an undeformed reference sphere (shape recovery), and one pulling it toward the object's center at a fixed radius (a rough stand-in for volume conservation). Global motion (the object moving through the world) and local motion (the mesh deforming on impact) are integrated separately and only reconciled during collisions — this separation is what keeps the simulation stable instead of diverging on impact. A few corrective terms are layered on top: one to cancel out the extra energy bounces would otherwise add, one to make wall collisions stiffer than ground collisions (so the player can't squeeze through gaps), and one that nudges the rest radius per-vertex to fake volume conservation under heavy deformation.
+**Soft body.** The main character uses a custom mass-spring simulation rather than a full physics solver, tuned for stability and game-feel over accuracy. The mesh deforms on impact and springs back into shape, with a few tricks layered on top to keep it looking squishy and alive without exploding or losing its volume during hard collisions.
 
-**Rigid body.** Limited to box shapes resting on infinite planes, which keeps the inertia tensor simple and avoids edge-on-edge collision cases entirely. Penetration is resolved with soft constraints — modeling the correction as a damped spring rather than snapping objects apart instantly — which removes the jittering typical of instant depenetration. Contact response otherwise follows the standard impulse-based approach (linear + angular velocity update from a single impulse at the contact point).
+**Rigid body.** A simplified rigid body solver for box-shaped objects resting on flat ground. Collisions are resolved with soft-constraints, avoiding the jittering you'd normally get.
 
-**Soft–rigid coupling.** The soft body bounces off rigid bodies as if they were momentarily static, while each contacting vertex pushes back on the rigid body with an impulse scaled by both masses. A small velocity-based offset is added to stop the soft body from passing through a rigid body that's moving toward it.
+**Soft–rigid coupling.** Soft and rigid bodies push against each other: the soft body deforms and bounces off, while rigid bodies get knocked around based on the impact of each spring.
 
-**Collision detection.** Each vertex's collision is found by tracing a line segment from its last position to its newly integrated position and checking it against the level's triangles. To avoid testing every vertex against every triangle in the scene, a single bounding sphere around the whole character (rather than a full spatial hierarchy like a BVH) is used as a cheap first filter — sufficient here since there's only one moving soft body.
+**Collision detection.** A lightweight system checks each part of the soft body against the level geometry, using a simple bounding volume around the whole character to keep things fast.
 
 Full derivations (force/impulse formulas, soft-constraint feedback terms, volume-correction math) are in `Report.pdf`.
 
@@ -31,7 +31,7 @@ papers/         references lookup at project beginning
 
 ## Core scripts
 
-**`simple_squishy.gd`** — soft-body solver and character state. Public surface:
+**`simple_squishy.gd`** - soft-body solver and character state. Public surface:
 
 ```gdscript
 add_glob_acc(acc: Vector3) -> void
@@ -47,7 +47,7 @@ get_local_basis() -> Basis
 Read-only state: `N`, `radius`, `is_colliding`, `glob_acc`, `glob_vel`.
 Debug: `G` toggles gizmos, `P` pauses simulation.
 
-**`mesh_utils.gd`** — mesh utilities: `create_icosphere`, `compute_neighbors`, `set_vertices`, `smooth_mesh`.
+**`mesh_utils.gd`** - mesh utilities: `create_icosphere`, `compute_neighbors`, `set_vertices`, `smooth_mesh`.
 
 ## Build
 
